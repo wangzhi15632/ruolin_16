@@ -130,6 +130,12 @@ void MainWindow::init()
 
     drawPieChartInit();
 
+    QScrollArea *s = new QScrollArea(ui->centralWidget);
+    s->setWidget(ui->widget);
+    ui->widget->setMinimumSize(1500,1000);
+    ui->horizontalLayout_5->addWidget(s);
+
+
     SearchThread *searchThread = new SearchThread(this);
     connect(searchThread, SIGNAL(finished()), searchThread, SLOT(deleteLater()));
     connect(searchThread, SIGNAL(sendUnmountNum(int)), this, SLOT(slotCloseDev(int)));
