@@ -14,10 +14,10 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayout_2">
+   <layout class="QHBoxLayout" name="horizontalLayout_5">
     <item>
      <widget class="QWidget" name="widget" native="true">
-      <layout class="QVBoxLayout" name="verticalLayout_3">
+      <layout class="QHBoxLayout" name="horizontalLayout_6">
        <item>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
@@ -71,7 +71,7 @@
            <item>
             <widget class="QGroupBox" name="groupBox_7">
              <property name="title">
-              <string>USB-7 </string>
+              <string>USB-7</string>
              </property>
             </widget>
            </item>

@@ -16,16 +16,15 @@ CopyThread::CopyThread(MainWindow* window)
 
 }
 
-void CopyThread::rcvPar(char *mountPoint)
+void CopyThread::cp_dir(char *mountPoint)
 {
-    qDebug("rcv part");
     memcpy(mountDir, mountPoint, 20);
     rcvFlag = true;
 }
 
 void CopyThread::timeOutEmit(void)
 {
-    //qDebug("xxx");
+    qDebug("aaaaaa");
     //emit(sendToUI(sum, copied, copy_start_time, false));
 }
 
@@ -38,8 +37,15 @@ void CopyThread::run()
 
         if(0 != statfs(mountDir, &s))
             return;
-
-        num = atoi(&mountDir[strlen(mountDir) - 1]);
+        if(strlen(mountDir) == 11)
+        {
+            num = atoi(&mountDir[10]);
+        }
+        else if(strlen(mountDir) == 12)
+        {
+            num = atoi(&mountDir[10]);
+        }
+        qDebug("run:%d",num);
         emit(sendUDevInfo(num, s.f_blocks, s.f_bsize, s.f_bfree));
 
         cp_task(mountDir);

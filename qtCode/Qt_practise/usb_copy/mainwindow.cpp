@@ -16,25 +16,45 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
-void MainWindow::createDev(int i )
-{
 
+void MainWindow::slotCloseDev(int num)
+{
+    //qDebug("window:%d", num);
+    usb[num].clearFlag = true;
+
+    usb[num].slice_1->setValue(1);
+    usb[num].slice_1->setBrush(Qt::darkGray);
+    usb[num].slice_2->setValue(0);
+
+
+    usb[num].label2->clear();
+    usb[num].label4->clear();
+    usb[num].label6->clear();
+    usb[num].progressBar->setValue(0);
 }
 
 void MainWindow::slotShow(int i, unsigned long block,unsigned long bsize,unsigned long bavail)
 {
-    double disk_size;
-    double disk_avail;
+    //double disk_size;
+    char disk_avail[20];
+    char disk_size[20];
+    //qDebug("slot show:%d", i);
+    usb[i].clearFlag = false;
 
-    disk_size = block * bsize /1024/1024/1024;
-    disk_avail = bavail * bsize /1024/1024/1024;
+    human_size(block * bsize, disk_size);
+    human_size(block * bsize - bavail * bsize, disk_avail);
 
-    usb[i].label2->setText(QString::number(disk_size)+"GB");
-    usb[i].label4->setText(QString::number(disk_size - disk_avail)+"GB");
+    //disk_size = block * bsize /1024/1024/1024;
+    //disk_avail = bavail * bsize /1024/1024/1024;
 
-    usb[i].slice_1->setValue(disk_avail/disk_size);
+    //usb[i].label2->setText(QString::number(disk_size)+"GB");
+    //usb[i].label4->setText(QString::number(disk_size - disk_avail)+"GB");
+    usb[i].label2->setText(disk_size);
+    usb[i].label4->setText(disk_avail);
+
+    usb[i].slice_1->setValue(static_cast<double>(bavail)/(static_cast<double>(block)));
     usb[i].slice_1->setBrush(Qt::lightGray);
-    usb[i].slice_2->setValue(1-disk_avail/disk_size);
+    usb[i].slice_2->setValue((1-  static_cast<double>(bavail)/static_cast<double>(block)));
     usb[i].slice_2->setBrush(Qt::blue);
 
 }
@@ -65,9 +85,13 @@ void MainWindow::slotProgress(int i, sum_t sum, copied_t copied, time_t copy_sta
 {
     time_t cur_time;
     int percent;
-    char hs[512];
+    char hs[20];
     long long sp = 0;
-    char speed[512];
+    char speed[20];
+
+    //qDebug("slot progress:%d", i);
+    if(usb[i].clearFlag == true)
+        return;
 
     time(&cur_time);
     if(sum.size == 0)
@@ -91,18 +115,7 @@ void MainWindow::slotProgress(int i, sum_t sum, copied_t copied, time_t copy_sta
 
     usb[i].label6->setText(speed);
     usb[i].progressBar->setValue(percent);
-    //qDebug("percent:%d", percent);
- //human_size(copied.size, hs);
-//    if(flag)
-//    {
-//        printf("\r\033[K%d directories %d files %s copied, %s, %s.\n",
-//            copied.dir, copied.file, hs, human_time(cur_time - copy_start_time, ht), speed);
-//    }
-//    else
-//    {
-//        printf("\r\033[K%d directories %d files %s copied, %d%%, %s %c ",
-//            copied.dir, copied.file, hs, percent, speed, animate[animate_pos = (animate_pos + 1) % 4]);
-//    }
+
 }
 
 void MainWindow::init()
@@ -116,15 +129,10 @@ void MainWindow::init()
     ui->centralWidget->setPalette(pal);
 
     drawPieChartInit();
-    QScrollArea *s = new QScrollArea(ui->centralWidget);
-    s->setWidget(ui->widget);
-    ui->widget->setMinimumSize(1500,1000);
-    ui->verticalLayout_2->addWidget(s);
 
     SearchThread *searchThread = new SearchThread(this);
-
-    connect(searchThread, SIGNAL(findDev(int )), this, SLOT(createDev(int)));
     connect(searchThread, SIGNAL(finished()), searchThread, SLOT(deleteLater()));
+    connect(searchThread, SIGNAL(sendUnmountNum(int)), this, SLOT(slotCloseDev(int)));
 
     searchThread->start();
 }
@@ -173,6 +181,8 @@ void MainWindow::drawPieChartInit()
     QGroupBox *tmpGroup;
     for(i = 0; i < USB_MAX_NUM; i++)
     {
+        usb[i].clearFlag  = false;
+
         tmpGroup = groupBox(i);
         // 构造两个饼状分区，A数据显示绿色占60%，B数据显示蓝色占40%
         usb[i].slice_1 = new QPieSlice(QStringLiteral("free"), 1, this);
@@ -228,6 +238,7 @@ void MainWindow::drawPieChartInit()
         usb[i].label5->setText(QApplication::translate("MainWindow", "速度:", Q_NULLPTR));
         usb[i].label6 = new QLabel(tmpGroup);
         usb[i].label6->setAlignment(Qt::AlignLeft);
+        usb[i].label6->setMinimumWidth(80);
         //usb[i].label6->
 
         usb[i].horizontalLayout_2 = new QHBoxLayout();

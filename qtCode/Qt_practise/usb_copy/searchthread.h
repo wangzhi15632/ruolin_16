@@ -13,9 +13,11 @@ protected:
     void run();
 private:
     void read_mount_point(void);
+    void read_unmount_point(void);
 
 signals:
-    void sendDev(char *);
+    void sendPar(char *);
+    void sendUnmountNum(int);
 
 public:
     MainWindow *window;

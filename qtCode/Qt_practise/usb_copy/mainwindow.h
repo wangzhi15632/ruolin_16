@@ -22,6 +22,8 @@ typedef struct
     QSpacerItem *horizontalSpacer, *horizontalSpacer_2, *horizontalSpacer_3;
     QProgressBar *progressBar;
 
+    bool clearFlag;
+
 }usb_t;
 
 
@@ -50,9 +52,9 @@ private:
     Ui::MainWindow *ui;
 
 private slots:
-    void createDev(int);
     void slotShow(int, unsigned long, unsigned long, unsigned long);
     void slotProgress(int, sum_t, copied_t, time_t, bool);
+    void slotCloseDev(int num);
 
 };
 

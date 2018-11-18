@@ -152,61 +152,7 @@ char* CopyThread::make_path(char *dest, const char *frt, const char *snd)
     }  
     return dest;  
 }  
-  #if 0
-/*显示进度条*/  
-void CopyThread::show_status(BOOL finish)
-{  
-    int percent;
-    char animate[4];  
-    static int animate_pos = -1;  
-    time_t cur_time;  
-    char speed[512];  
-    char hs[512];  
-    long long sp = 0;  
-    char ht[512];  
-  
-    animate[0] = '-';  
-    animate[1] = '/';  
-    animate[2] = '|';  
-    animate[3] = '\\';  
-  
-    time(&cur_time);  
-    if(sum.size == 0)
-    {  
-        percent = 0;  
-    }  
-    else  
-    {  
-        percent = static_cast<int>(copied.size * 1.0 / sum.size) * 100;
-    }  
-  
-    if(cur_time > copy_start_time)
-    {  
-        sp = copied.size / (cur_time - copy_start_time);
-        sprintf(speed, "%s/s", human_size(sp, hs));  
-    }  
-    else  
-    {  
-        sprintf(speed, "-");  
-    }  
-  
-    human_size(copied.size, hs);
-    if(finish)  
-    {  
-        printf("\r\033[K%d directories %d files %s copied, %s, %s.\n",  
-            copied.dir, copied.file, hs, human_time(cur_time - copy_start_time, ht), speed);
-    }  
-    else  
-    {  
-        printf("\r\033[K%d directories %d files %s copied, %d%%, %s %c ",  
-            copied.dir, copied.file, hs, percent, speed, animate[animate_pos = (animate_pos + 1) % 4]);
-    }  
 
-    emit(sendToUI(sum, copied, copy_start_time, false));
-
-    fflush(stdout);  
-}  
-  #endif
 /*  
 * 遍历函数 
 * 遍历函数只保证源文件/文件夹的每一项都调用一次opp函数 
@@ -214,7 +160,7 @@ void CopyThread::show_status(BOOL finish)
 * 采用“串烧”式程序风格 
 * 只有一种情况下返回值为FALSE：opp 函数返回OPP_CANCEL 
 */  
-int CopyThread::walk(const char* path_from, const char* path_to, const char* path_tree, each_opp_t opp)
+int CopyThread::walk_sum(const char* path_from, const char* path_to, const char* path_tree)
 {  
     struct stat st;  
     DIR* dir = nullptr;
@@ -232,7 +178,7 @@ int CopyThread::walk(const char* path_from, const char* path_to, const char* pat
     }  
   
     /*调用一次处理函数，处理当前项*/  
-    if((ret_val = opp(path_from, path_to, path_tree, &st, this)) != OPP_CONTINUE)
+    if((ret_val = sum_up(path_from, path_to, path_tree, &st)) != OPP_CONTINUE)
     {  
         return ret_val;  
     }  
@@ -253,27 +199,26 @@ int CopyThread::walk(const char* path_from, const char* path_to, const char* pat
     /*浏览目录*/  
     while((entry = readdir(dir)) != nullptr)
     {  
-        /*构建path_tree_new*/  
+        /*构建path_tree_new*/
         make_path(path_tree_new, path_tree, entry->d_name);  
         make_path(path_from_full, path_from, path_tree_new);  
       
         /*无法访问 skip*/  
         if(-1 == stat(path_from_full, &st))  
         {  
-            print_message(MSGT_ERROR, "skip, can't access \"\".\n", path_from_full);  
+            qDebug("skip, can't access %s\"\".\n", path_from_full);
             continue;  
-        }  
-  
-        /* 忽略 . 和 .. */  
+        }
+        /* 忽略 . 和 .. */
         if(S_ISDIR(st.st_mode) && (strcmp(".", entry->d_name) == 0 || strcmp("..", entry->d_name) == 0))  
         {  
             continue;  
         }  
-  
+
         if(S_ISDIR(st.st_mode))  
         {  
           /*递归处理子目录*/  
-            if(walk(path_from, path_to, path_tree_new, opp) == OPP_CANCEL)
+            if(walk_sum(path_from, path_to, path_tree_new) == OPP_CANCEL)
             {  
                 ret_val = OPP_CANCEL;  
                 break;  
@@ -282,8 +227,8 @@ int CopyThread::walk(const char* path_from, const char* path_to, const char* pat
         else  
         {  
             /*处理函数处理一个子项*/  
-            if(opp(path_from, path_to, path_tree_new, &st,this) == OPP_CANCEL)
-            {  
+            if(sum_up(path_from, path_to, path_tree_new, &st) == OPP_CANCEL)
+            {
                 ret_val = OPP_CANCEL;  
                 break;  
             }  
@@ -294,27 +239,103 @@ int CopyThread::walk(const char* path_from, const char* path_to, const char* pat
 }  
   
 /* 统计函数 */  
-int sum_up(const char* path_from, const char* path_to, const char* path_tree, const struct stat* st, CopyThread* copy)
+int CopyThread::sum_up(const char* path_from, const char* path_to, const char* path_tree, const struct stat* st)
 {  
     if(S_ISREG(st->st_mode))  
     {  
-        copy->sum.file++;
-        copy->sum.size += st->st_size;
+        sum.file++;
+        sum.size += st->st_size;
     }  
     else if(S_ISDIR(st->st_mode))  
     {  
-        copy->sum.dir++;
+        sum.dir++;
     }  
     else  
     {  
-        copy->print_message(MSGT_WARNING, "skip:%s\n", path_tree);
+        print_message(MSGT_WARNING, "skip:%s\n", path_tree);
     }  
 	
     return OPP_CONTINUE;  
 }  
-  
+int CopyThread::walk_copy(const char* path_from, const char* path_to, const char* path_tree)
+{
+    struct stat st;
+    DIR* dir = nullptr;
+    struct dirent *entry = nullptr;
+    char path_tree_new[MAX_PATH_LENGTH];
+    char path_from_full[MAX_PATH_LENGTH];
+    int ret_val = OPP_CONTINUE;
+
+    /*获得源的属性*/
+    make_path(path_from_full, path_from, path_tree);
+    if(-1 == stat(path_from_full, &st))
+    {
+        print_message(MSGT_ERROR, "can't access \"%s\".\n", path_from_full);
+        return OPP_SKIP;
+    }
+
+    /*调用一次处理函数，处理当前项*/
+    if((ret_val = action(path_from, path_to, path_tree, &st)) != OPP_CONTINUE)
+    {
+        return ret_val;
+    }
+
+    /*如果是目录，则浏览目录，否则结束*/
+    if(!S_ISDIR(st.st_mode))
+    {
+        return OPP_CONTINUE;
+    }
+
+    /*打开目录*/
+    if(!(dir = opendir(path_from_full)))
+    {
+        print_message(MSGT_ERROR, "can't open directory \"%s\".\n", path_from_full);
+        return OPP_SKIP;
+    }
+
+    /*浏览目录*/
+    while((entry = readdir(dir)) != nullptr)
+    {
+        /*构建path_tree_new*/
+        make_path(path_tree_new, path_tree, entry->d_name);
+        make_path(path_from_full, path_from, path_tree_new);
+
+        /*无法访问 skip*/
+        if(-1 == stat(path_from_full, &st))
+        {
+            //qDebug("skip, can't access %s\"\".\n", path_from_full);
+            continue;
+        }
+        /* 忽略 . 和 .. */
+        if(S_ISDIR(st.st_mode) && (strcmp(".", entry->d_name) == 0 || strcmp("..", entry->d_name) == 0))
+        {
+            continue;
+        }
+
+        if(S_ISDIR(st.st_mode))
+        {
+          /*递归处理子目录*/
+            if(walk_copy(path_from, path_to, path_tree_new) == OPP_CANCEL)
+            {
+                ret_val = OPP_CANCEL;
+                break;
+            }
+        }
+        else
+        {
+            /*处理函数处理一个子项*/
+            if(action(path_from, path_to, path_tree_new, &st) == OPP_CANCEL)
+            {
+                ret_val = OPP_CANCEL;
+                break;
+            }
+        }
+    }
+    closedir(dir);
+    return ret_val;
+}
 /* 操作 */  
-int action(const char* path_from, const char* path_to, const char* path_tree, const struct stat* st, CopyThread* copy)
+int CopyThread::action(const char* path_from, const char* path_to, const char* path_tree, const struct stat* st)
 {  
     int ret_val = OPP_CONTINUE;  
     char path_from_full[MAX_PATH_LENGTH];  
@@ -324,25 +345,26 @@ int action(const char* path_from, const char* path_to, const char* path_tree, co
     FILE *src_file, *dest_file;   
     struct stat st_dest;  
       
-    copy->make_path(path_from_full, path_from, path_tree);
-    copy->make_path(path_to_full, path_to, path_tree);
-  
-    if(S_ISREG(st->st_mode))  
+    make_path(path_from_full, path_from, path_tree);
+    make_path(path_to_full, path_to, path_tree);
+
+    if(S_ISREG(st->st_mode))
     {  
-        copy->print_message(MSGT_VERBOSE, "cp \"%s\" -> \"%s\".\n", path_from_full, path_to_full);
-        emit(copy->sendToUI(copy->num, copy->sum, copy->copied, copy->copy_start_time, false));
+        //copy->print_message(MSGT_VERBOSE, "cp \"%s\" -> \"%s\".\n", path_from_full, path_to_full);
+       // qDebug("cp \"%s\" -> \"%s\"", path_from_full, path_to_full);
+       // qDebug("copy->num:%d", num);
 		if(strcmp(path_from_full, path_to_full) == 0)  
         {  
             ret_val = OPP_SKIP;  
-            copy->print_message(MSGT_ERROR, "skip, \"%s\" and \"%s\" are the same.\n", path_from_full, path_to_full);
+            print_message(MSGT_ERROR, "skip, \"%s\" and \"%s\" are the same.\n", path_from_full, path_to_full);
         }  
         else if(src_file = fopen(path_from_full, "rb"))  
         {  
             do  
-            {  
+            {
                 /* open target file for write */  
                 if(dest_file = fopen(path_to_full, "wb"))  
-                {  
+                {
                     while((rd = fread(buf, 1, COPY_BUF_SIZE, src_file)) > 0)  
                     {  
                         wr = 0;  
@@ -352,50 +374,51 @@ int action(const char* path_from, const char* path_to, const char* path_tree, co
                             wr += swr;  
                         }  
                         while(swr > 0 && wr < rd);  
-                        copy->copied.size += rd;
+                        copied.size += rd;
                       
                         if(wr != rd)  
                         {  
                             /*只有部分文件被复制也视为成功因为文件系统中已经有这个文件的记录了*/  
-                            copy->print_message(MSGT_PROMPT, "write file error %s.\n", path_to_full);
+                            qDebug("write file error %s.\n", path_to_full);
                             break;  
                         }  
                     }  
                     fclose(dest_file);  
                     chmod(path_to_full, st->st_mode);  
-                    copy->copied.file++;
+                    copied.file++;
+                    emit(sendToUI(num, sum, copied, copy_start_time, false));
                 }  
                 else  
                 {  
                     ret_val = OPP_SKIP;  
-                    copy->print_message(MSGT_ERROR, "skip, can't open target file \"%s\"\n", path_to_full);
+                    qDebug("skip, can't open target file \"%s\"\n", path_to_full);
                 }  
-            }while(0);  
-  
+            }while(0);
+
             fclose(src_file);  
         }  
         else  
         {  
             ret_val = OPP_SKIP;  
-            copy->print_message(MSGT_ERROR, "skip, can't open source file \"%s\"\n", path_from_full);
+            print_message(MSGT_ERROR, "skip, can't open source file \"%s\"\n", path_from_full);
         }  
     }  
     else if(S_ISDIR(st->st_mode))  
     {  
         /* directories */  
-        copy->print_message(MSGT_VERBOSE, "mkdir \"%s\"\n", path_to_full);
+        print_message(MSGT_VERBOSE, "mkdir \"%s\"\n", path_to_full);
         
         if(0 == stat(path_to_full, &st_dest))  
         {  
             /*path_to_full already exist*/  
             if(S_ISDIR(st_dest.st_mode))  
             {  
-                copy->copied.dir++;
+                copied.dir++;
             }  
             else  
             {  
                 ret_val = OPP_SKIP;  
-                copy->print_message(MSGT_WARNING, "skip, \"%s\" exists and it's not a directory.\n", path_to_full);
+                print_message(MSGT_WARNING, "skip, \"%s\" exists and it's not a directory.\n", path_to_full);
             }  
         }  
         else  
@@ -404,19 +427,19 @@ int action(const char* path_from, const char* path_to, const char* path_tree, co
             if(0 == mkdir(path_to_full, st->st_mode))  
             {  
                 chmod(path_to_full, st->st_mode);  
-                copy->copied.dir++;
+                copied.dir++;
             }  
             else  
             {  
                 ret_val = OPP_SKIP;  
-                copy->print_message(MSGT_ERROR, "skip, \"%s\" mkdir failed.\n", path_to_full);
+                print_message(MSGT_ERROR, "skip, \"%s\" mkdir failed.\n", path_to_full);
             }  
         }  
     }  
     else  
     {  
         ret_val = OPP_SKIP;  
-        copy->print_message(MSGT_WARNING, "skip, \"%s\" is not a file nor directory.\n", path_to_full);
+        print_message(MSGT_WARNING, "skip, \"%s\" is not a file nor directory.\n", path_to_full);
     }  
   
     return ret_val;  
@@ -459,11 +482,19 @@ int CopyThread::cp_task(char *dir)
     sum.file = 0;  
     sum.dir = 0;  
     sum.size = 0;  
-  
-    path_to = "/home/wz/test";  
+
+    if((num > 0) && (num < 4))
+    {
+        path_to = "/home/wz/test";
+    }
+    else
+    {
+        path_to = "/home/wz/mountpoint";
+    }
+
     path_from = dir;  
 
-    walk(path_from, path_to, nullptr, sum_up);
+    walk_sum(path_from, path_to, nullptr);
       
     if(sum.file == 0 && sum.dir == 0)  
     {  
@@ -471,9 +502,6 @@ int CopyThread::cp_task(char *dir)
     }  
     else  
     {  
-        //human_size(sum.size, human_readable_size);
-        //printf("%d directories %d files %s detected.\n", sum.dir, sum.file, human_readable_size);
-          
         /* 第二次遍历：执行*/  
         copied.file = 0;  
         copied.dir = 0;  
@@ -481,11 +509,8 @@ int CopyThread::cp_task(char *dir)
   
         // 设置一个定时器，每隔1秒显示一下进度   
         time(&copy_start_time);  
-        //show_status(FALSE);
-        //install_time();
 
         path_from = dir;  
-        path_to = "/home/wz/test";  
 
         /*源是否存在*/  
         if(-1 == stat(path_from, &st_src))  
@@ -521,7 +546,9 @@ int CopyThread::cp_task(char *dir)
             return 0;  
         }  
 
-        walk(path_from, path_to, nullptr, action);
+        walk_copy(path_from, path_to, nullptr);
+        //emit(sendToUI(num, sum, copied, copy_start_time, true));
+
     }  
   
     return 0;  
