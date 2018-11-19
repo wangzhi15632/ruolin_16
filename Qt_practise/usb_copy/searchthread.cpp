@@ -12,6 +12,6 @@ void SearchThread::run()
         read_mount_point();
         read_unmount_point();
 
-        sleep(5);
+        sleep(1);
     }
 }

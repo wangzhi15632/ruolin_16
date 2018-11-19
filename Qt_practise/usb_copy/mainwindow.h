@@ -7,6 +7,7 @@
 #include <QtCharts/QPieSeries>
 #include <QtCharts/QPieSlice>
 #include "usb_copy.h"
+#include "searchthread.h"
 
 #define USB_MAX_NUM 16
 
@@ -21,6 +22,8 @@ typedef struct
     QHBoxLayout *horizontalLayout_1, *horizontalLayout_2;
     QSpacerItem *horizontalSpacer, *horizontalSpacer_2, *horizontalSpacer_3;
     QProgressBar *progressBar;
+
+    bool clearFlag;
 
 }usb_t;
 
@@ -45,6 +48,7 @@ private:
 
 private:
     usb_t usb[USB_MAX_NUM];
+    SearchThread *searchThread;
 
 private:
     Ui::MainWindow *ui;

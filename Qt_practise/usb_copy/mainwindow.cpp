@@ -19,10 +19,11 @@ MainWindow::~MainWindow()
 
 void MainWindow::slotCloseDev(int num)
 {
+    usb[num].clearFlag = true;
+
     usb[num].slice_1->setValue(1);
     usb[num].slice_1->setBrush(Qt::darkGray);
     usb[num].slice_2->setValue(0);
-
 
     usb[num].label2->clear();
     usb[num].label4->clear();
@@ -32,18 +33,14 @@ void MainWindow::slotCloseDev(int num)
 
 void MainWindow::slotShow(int i, unsigned long block,unsigned long bsize,unsigned long bavail)
 {
-    //double disk_size;
     char disk_avail[20];
     char disk_size[20];
+
+    usb[i].clearFlag = false;
 
     human_size(block * bsize, disk_size);
     human_size(block * bsize - bavail * bsize, disk_avail);
 
-    //disk_size = block * bsize /1024/1024/1024;
-    //disk_avail = bavail * bsize /1024/1024/1024;
-
-    //usb[i].label2->setText(QString::number(disk_size)+"GB");
-    //usb[i].label4->setText(QString::number(disk_size - disk_avail)+"GB");
     usb[i].label2->setText(disk_size);
     usb[i].label4->setText(disk_avail);
 
@@ -84,6 +81,9 @@ void MainWindow::slotProgress(int i, sum_t sum, copied_t copied, time_t copy_sta
     long long sp = 0;
     char speed[20];
 
+    if(usb[i].clearFlag == true)
+        return;
+
     time(&cur_time);
     if(sum.size == 0)
     {
@@ -112,7 +112,7 @@ void MainWindow::slotProgress(int i, sum_t sum, copied_t copied, time_t copy_sta
 void MainWindow::init()
 {
     setWindowTitle(tr("16路转储平台 V1.0"));
-    setMinimumSize(QSize(1400, 1000));
+    setMinimumSize(QSize(1000, 800));
 
     QPalette pal(ui->centralWidget->palette());
     pal.setColor(QPalette::Background, Qt::white);
@@ -121,7 +121,12 @@ void MainWindow::init()
 
     drawPieChartInit();
 
-    SearchThread *searchThread = new SearchThread(this);
+    QScrollArea *scroll = new QScrollArea(ui->centralWidget);
+    scroll->setWidget(ui->widget);
+    ui->widget->setMinimumSize(1500,1000);
+    ui->horizontalLayout_5->addWidget(scroll);
+
+    searchThread = new SearchThread(this);
     connect(searchThread, SIGNAL(finished()), searchThread, SLOT(deleteLater()));
     connect(searchThread, SIGNAL(sendUnmountNum(int)), this, SLOT(slotCloseDev(int)));
 
@@ -130,6 +135,11 @@ void MainWindow::init()
 
 QGroupBox* MainWindow::groupBox(int i)
 {
+    if((i < 0) || (i > USB_MAX_NUM))
+    {
+        return nullptr;
+    }
+
     switch (i)
     {
         case 0:
@@ -164,16 +174,25 @@ QGroupBox* MainWindow::groupBox(int i)
             return ui->groupBox_15;
         case 15:
             return ui->groupBox_16;
+        default:
+            return nullptr;
     }
+
+    return nullptr;
 }
 void MainWindow::drawPieChartInit()
 {
     int i;
-    QGroupBox *tmpGroup;
+    QGroupBox *tmpGroup = nullptr;
+
     for(i = 0; i < USB_MAX_NUM; i++)
     {
+        usb[i].clearFlag  = false;
+
         tmpGroup = groupBox(i);
-        // 构造两个饼状分区，A数据显示绿色占60%，B数据显示蓝色占40%
+        if(tmpGroup == nullptr)
+            return;
+
         usb[i].slice_1 = new QPieSlice(QStringLiteral("free"), 1, this);
         usb[i].slice_1->setBrush(Qt::darkGray);
         usb[i].slice_2 = new QPieSlice(QStringLiteral("used"), 0, this);
@@ -228,7 +247,6 @@ void MainWindow::drawPieChartInit()
         usb[i].label6 = new QLabel(tmpGroup);
         usb[i].label6->setAlignment(Qt::AlignLeft);
         usb[i].label6->setMinimumWidth(80);
-        //usb[i].label6->
 
         usb[i].horizontalLayout_2 = new QHBoxLayout();
         usb[i].horizontalLayout_2->setSpacing(2);
@@ -236,10 +254,8 @@ void MainWindow::drawPieChartInit()
         usb[i].horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
         usb[i].horizontalLayout_2->addWidget(usb[i].label5);
         usb[i].horizontalLayout_2->addWidget(usb[i].label6);
-        //usb[i].horizontalSpacer_3 = new QSpacerItem(10, 10, QSizePolicy::Expanding, QSizePolicy::Minimum);
-       // usb[i].horizontalLayout_2->addItem(usb[i].horizontalSpacer_3);
 
-        usb[i].progressBar = new QProgressBar();
+        usb[i].progressBar = new QProgressBar(tmpGroup);
         usb[i].progressBar->setRange(0,100);
         usb[i].horizontalLayout_2->addWidget(usb[i].progressBar);
 

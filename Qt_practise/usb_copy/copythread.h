@@ -23,13 +23,14 @@ private:
     void print_message(int t, const char* fmt, ...);
     char* make_path(char *dest, const char *frt, const char *snd);
     void show_status(BOOL finish);
-    int walk(const char* path_from, const char* path_to, const char* path_tree, each_opp_t opp);
+    int walk_sum(const char* path_from, const char* path_to, const char* path_tree);
+    int walk_copy(const char* path_from, const char* path_to, const char* path_tree);
+    //int walk(const char* path_from, const char* path_to, const char* path_tree, each_opp_t opp);
     bool is_self_copy(const char* src, const char* dest);
     void install_time();
     int cp_task(char *dir);
-
-    friend int sum_up(const char* path_from, const char* path_to, const char* path_tree, const struct stat* st, CopyThread* copy);
-    friend int action(const char* path_from, const char* path_to, const char* path_tree, const struct stat* st, CopyThread* copy);
+    int sum_up(const char* path_from, const char* path_to, const char* path_tree, const struct stat* st);
+    int action(const char* path_from, const char* path_to, const char* path_tree, const struct stat* st);
 
 private slots:
    void timeOutEmit(void);

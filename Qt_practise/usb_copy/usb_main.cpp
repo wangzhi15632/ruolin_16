@@ -83,8 +83,16 @@ void SearchThread::read_unmount_point(void)
             memset(unmountPoint, 0, 20);
             memcpy(unmountPoint, line, read - 1);
 
-            num = atoi(&unmountPoint[strlen(unmountPoint) - 1]);
+            if(strlen(unmountPoint) == 11)  // /media/usb0-9
+            {
+                num = atoi(&unmountPoint[10]);
+            }
+            else if(strlen(unmountPoint) == 12) // /media/usb10-15
+            {
+                num = atoi(&unmountPoint[10]);
+            }
 
+            qDebug("send num:%d",num);
             emit(sendUnmountNum(num));
         }
 
