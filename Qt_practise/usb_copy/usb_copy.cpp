@@ -178,7 +178,7 @@ int CopyThread::walk_sum(const char* path_from, const char* path_to, const char*
     }  
   
     /*调用一次处理函数，处理当前项*/  
-    if((ret_val = sum_up(path_from, path_to, path_tree, &st)) != OPP_CONTINUE)
+    if((ret_val = sum_up(path_tree, &st)) != OPP_CONTINUE)
     {  
         return ret_val;  
     }  
@@ -227,7 +227,7 @@ int CopyThread::walk_sum(const char* path_from, const char* path_to, const char*
         else  
         {  
             /*处理函数处理一个子项*/  
-            if(sum_up(path_from, path_to, path_tree_new, &st) == OPP_CANCEL)
+            if(sum_up(path_tree_new, &st) == OPP_CANCEL)
             {
                 ret_val = OPP_CANCEL;  
                 break;  
@@ -239,7 +239,7 @@ int CopyThread::walk_sum(const char* path_from, const char* path_to, const char*
 }  
   
 /* 统计函数 */  
-int CopyThread::sum_up(const char* path_from, const char* path_to, const char* path_tree, const struct stat* st)
+int CopyThread::sum_up(const char* path_tree, const struct stat* st)
 {  
     if(S_ISREG(st->st_mode))  
     {  
@@ -358,12 +358,12 @@ int CopyThread::action(const char* path_from, const char* path_to, const char* p
             ret_val = OPP_SKIP;  
             print_message(MSGT_ERROR, "skip, \"%s\" and \"%s\" are the same.\n", path_from_full, path_to_full);
         }  
-        else if(src_file = fopen(path_from_full, "rb"))  
+        else if((src_file = fopen(path_from_full, "rb")) != nullptr)
         {  
             do  
             {
                 /* open target file for write */  
-                if(dest_file = fopen(path_to_full, "wb"))  
+                if((dest_file = fopen(path_to_full, "wb")) != nullptr)
                 {
                     while((rd = fread(buf, 1, COPY_BUF_SIZE, src_file)) > 0)  
                     {  
@@ -474,7 +474,6 @@ void CopyThread::install_time()
 int CopyThread::cp_task(char *dir)
 {  
     struct stat st_src, st_dest;  
-    char human_readable_size[200];  
     char path_to_fixed[MAX_PATH_LENGTH];  
     char *path_from = nullptr, *path_to = nullptr, *file_name = nullptr;
  
@@ -483,13 +482,21 @@ int CopyThread::cp_task(char *dir)
     sum.dir = 0;  
     sum.size = 0;  
 
-    if((num > 0) && (num < 4))
+    if((num >= 0) && (num <= 3))
     {
-        path_to = "/home/wz/test";
+        path_to = "/home/wz/test1";
     }
-    else
+    else if((num >= 4) && (num <= 7))
     {
-        path_to = "/home/wz/mountpoint";
+        path_to = "/home/wz/test2";
+    }
+    else if((num >= 8) && (num <= 11))
+    {
+        path_to = "/home/wz/test3";
+    }
+    else if((num >= 12) && (num <= 15))
+    {
+        path_to = "/home/wz/test4";
     }
 
     path_from = dir;  
@@ -547,8 +554,6 @@ int CopyThread::cp_task(char *dir)
         }  
 
         walk_copy(path_from, path_to, nullptr);
-        //emit(sendToUI(num, sum, copied, copy_start_time, true));
-
     }  
   
     return 0;  

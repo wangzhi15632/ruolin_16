@@ -4,16 +4,9 @@
 #include <stdlib.h>
 #include <QMetaType>
 
-CopyThread::CopyThread(MainWindow* window)
+CopyThread::CopyThread()
 {
-    wind = window;
-    qRegisterMetaType<sum_t>("sum_t");
-    qRegisterMetaType<copied_t>("copied_t");
-    qRegisterMetaType<time_t>("time_t");
-
-    connect(this, SIGNAL(sendUDevInfo(int, unsigned long, unsigned long, unsigned long)), wind, SLOT(slotShow(int, unsigned long, unsigned long, unsigned long)));
-    connect(this, SIGNAL(sendToUI(int, sum_t, copied_t, time_t, bool)), wind, SLOT(slotProgress(int, sum_t, copied_t, time_t, bool)));
-
+    rcvFlag = false;
 }
 
 void CopyThread::cp_dir(char *mountPoint)
@@ -35,8 +28,10 @@ void CopyThread::run()
         struct statfs s;
         memset(&s, 0, sizeof(struct statfs));
 
+        qDebug("mountDir:%s", mountDir);
         if(0 != statfs(mountDir, &s))
             return;
+
         if(strlen(mountDir) == 11)
         {
             num = atoi(&mountDir[10]);
@@ -45,7 +40,7 @@ void CopyThread::run()
         {
             num = atoi(&mountDir[10]);
         }
-        qDebug("run:%d",num);
+
         emit(sendUDevInfo(num, s.f_blocks, s.f_bsize, s.f_bfree));
 
         cp_task(mountDir);

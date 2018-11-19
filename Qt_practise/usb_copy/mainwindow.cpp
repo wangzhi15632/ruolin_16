@@ -3,6 +3,7 @@
 #include "usb_main.h"
 #include <pthread.h>
 #include "searchthread.h"
+#include "copythread.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -15,6 +16,19 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::slotFindDev(char *mountPoint)
+{
+    CopyThread *copyThread = new CopyThread();
+
+    connect(copyThread, SIGNAL(sendUDevInfo(int, unsigned long, unsigned long, unsigned long)), this, SLOT(slotShow(int, unsigned long, unsigned long, unsigned long)));
+    connect(copyThread, SIGNAL(sendToUI(int, sum_t, copied_t, time_t, bool)), this, SLOT(slotProgress(int, sum_t, copied_t, time_t)));
+    connect(copyThread, SIGNAL(finished()), copyThread, SLOT(deleteLater()));
+
+    copyThread->cp_dir(mountPoint);
+
+    copyThread->start();
 }
 
 void MainWindow::slotCloseDev(int num)
@@ -73,7 +87,7 @@ char* MainWindow::human_size(long long s, char *hs)
     return hs;
 }
 
-void MainWindow::slotProgress(int i, sum_t sum, copied_t copied, time_t copy_start_time, bool flag)
+void MainWindow::slotProgress(int i, sum_t sum, copied_t copied, time_t copy_start_time)
 {
     time_t cur_time;
     int percent;
@@ -114,6 +128,10 @@ void MainWindow::init()
     setWindowTitle(tr("16路转储平台 V1.0"));
     setMinimumSize(QSize(1000, 800));
 
+    qRegisterMetaType<sum_t>("sum_t");
+    qRegisterMetaType<copied_t>("copied_t");
+    qRegisterMetaType<time_t>("time_t");
+
     QPalette pal(ui->centralWidget->palette());
     pal.setColor(QPalette::Background, Qt::white);
     ui->centralWidget->setAutoFillBackground(true);
@@ -129,6 +147,7 @@ void MainWindow::init()
     searchThread = new SearchThread(this);
     connect(searchThread, SIGNAL(finished()), searchThread, SLOT(deleteLater()));
     connect(searchThread, SIGNAL(sendUnmountNum(int)), this, SLOT(slotCloseDev(int)));
+    connect(searchThread, SIGNAL(sendMountNum(char *)), this, SLOT(slotFindDev(char *)));
 
     searchThread->start();
 }
