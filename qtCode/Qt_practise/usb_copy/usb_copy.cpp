@@ -64,7 +64,7 @@ int CopyThread::dir_is_empty(char* dirname)
 
     if(dir == nullptr)
     {
-        printf("open %s failed\n", dirname);
+        //printf("open %s failed\n", dirname);
         return TRUE;
     }
 
@@ -173,12 +173,12 @@ int CopyThread::walk_sum(const char* path_from, const char* path_to, const char*
     make_path(path_from_full, path_from, path_tree);  
     if(-1 == stat(path_from_full, &st))  
     {  
-        print_message(MSGT_ERROR, "can't access \"%s\".\n", path_from_full);  
+        //print_message(MSGT_ERROR, "can't access \"%s\".\n", path_from_full);
         return OPP_SKIP;  
     }  
   
     /*调用一次处理函数，处理当前项*/  
-    if((ret_val = sum_up(path_from, path_to, path_tree, &st)) != OPP_CONTINUE)
+    if((ret_val = sum_up(path_tree, &st)) != OPP_CONTINUE)
     {  
         return ret_val;  
     }  
@@ -192,7 +192,7 @@ int CopyThread::walk_sum(const char* path_from, const char* path_to, const char*
     /*打开目录*/  
     if(!(dir = opendir(path_from_full)))  
     {  
-        print_message(MSGT_ERROR, "can't open directory \"%s\".\n", path_from_full);  
+       // print_message(MSGT_ERROR, "can't open directory \"%s\".\n", path_from_full);
         return OPP_SKIP;  
     }  
   
@@ -227,7 +227,7 @@ int CopyThread::walk_sum(const char* path_from, const char* path_to, const char*
         else  
         {  
             /*处理函数处理一个子项*/  
-            if(sum_up(path_from, path_to, path_tree_new, &st) == OPP_CANCEL)
+            if(sum_up(path_tree_new, &st) == OPP_CANCEL)
             {
                 ret_val = OPP_CANCEL;  
                 break;  
@@ -239,7 +239,7 @@ int CopyThread::walk_sum(const char* path_from, const char* path_to, const char*
 }  
   
 /* 统计函数 */  
-int CopyThread::sum_up(const char* path_from, const char* path_to, const char* path_tree, const struct stat* st)
+int CopyThread::sum_up(const char* path_tree, const struct stat* st)
 {  
     if(S_ISREG(st->st_mode))  
     {  
@@ -252,7 +252,7 @@ int CopyThread::sum_up(const char* path_from, const char* path_to, const char* p
     }  
     else  
     {  
-        print_message(MSGT_WARNING, "skip:%s\n", path_tree);
+        qWarning("skip:%s\n", path_tree);
     }  
 	
     return OPP_CONTINUE;  
@@ -270,7 +270,7 @@ int CopyThread::walk_copy(const char* path_from, const char* path_to, const char
     make_path(path_from_full, path_from, path_tree);
     if(-1 == stat(path_from_full, &st))
     {
-        print_message(MSGT_ERROR, "can't access \"%s\".\n", path_from_full);
+        qCritical("can't access \"%s\".\n", path_from_full);
         return OPP_SKIP;
     }
 
@@ -289,7 +289,7 @@ int CopyThread::walk_copy(const char* path_from, const char* path_to, const char
     /*打开目录*/
     if(!(dir = opendir(path_from_full)))
     {
-        print_message(MSGT_ERROR, "can't open directory \"%s\".\n", path_from_full);
+        qCritical("can't open directory \"%s\".\n", path_from_full);
         return OPP_SKIP;
     }
 
@@ -303,7 +303,7 @@ int CopyThread::walk_copy(const char* path_from, const char* path_to, const char
         /*无法访问 skip*/
         if(-1 == stat(path_from_full, &st))
         {
-            //qDebug("skip, can't access %s\"\".\n", path_from_full);
+            qCritical("skip, can't access %s\"\".\n", path_from_full);
             continue;
         }
         /* 忽略 . 和 .. */
@@ -356,14 +356,14 @@ int CopyThread::action(const char* path_from, const char* path_to, const char* p
 		if(strcmp(path_from_full, path_to_full) == 0)  
         {  
             ret_val = OPP_SKIP;  
-            print_message(MSGT_ERROR, "skip, \"%s\" and \"%s\" are the same.\n", path_from_full, path_to_full);
+            qCritical("skip, \"%s\" and \"%s\" are the same.\n", path_from_full, path_to_full);
         }  
-        else if(src_file = fopen(path_from_full, "rb"))  
+        else if((src_file = fopen(path_from_full, "rb")) != nullptr)
         {  
             do  
             {
                 /* open target file for write */  
-                if(dest_file = fopen(path_to_full, "wb"))  
+                if((dest_file = fopen(path_to_full, "wb")) != nullptr)
                 {
                     while((rd = fread(buf, 1, COPY_BUF_SIZE, src_file)) > 0)  
                     {  
@@ -379,7 +379,7 @@ int CopyThread::action(const char* path_from, const char* path_to, const char* p
                         if(wr != rd)  
                         {  
                             /*只有部分文件被复制也视为成功因为文件系统中已经有这个文件的记录了*/  
-                            qDebug("write file error %s.\n", path_to_full);
+                            qCritical("write file error %s.\n", path_to_full);
                             break;  
                         }  
                     }  
@@ -391,7 +391,7 @@ int CopyThread::action(const char* path_from, const char* path_to, const char* p
                 else  
                 {  
                     ret_val = OPP_SKIP;  
-                    qDebug("skip, can't open target file \"%s\"\n", path_to_full);
+                    qCritical("skip, can't open target file \"%s\"\n", path_to_full);
                 }  
             }while(0);
 
@@ -400,13 +400,13 @@ int CopyThread::action(const char* path_from, const char* path_to, const char* p
         else  
         {  
             ret_val = OPP_SKIP;  
-            print_message(MSGT_ERROR, "skip, can't open source file \"%s\"\n", path_from_full);
+            qCritical("skip, can't open source file \"%s\"\n", path_from_full);
         }  
     }  
     else if(S_ISDIR(st->st_mode))  
     {  
         /* directories */  
-        print_message(MSGT_VERBOSE, "mkdir \"%s\"\n", path_to_full);
+        qInfo("mkdir \"%s\"\n", path_to_full);
         
         if(0 == stat(path_to_full, &st_dest))  
         {  
@@ -418,7 +418,7 @@ int CopyThread::action(const char* path_from, const char* path_to, const char* p
             else  
             {  
                 ret_val = OPP_SKIP;  
-                print_message(MSGT_WARNING, "skip, \"%s\" exists and it's not a directory.\n", path_to_full);
+                qWarning("skip, \"%s\" exists and it's not a directory.\n", path_to_full);
             }  
         }  
         else  
@@ -432,14 +432,14 @@ int CopyThread::action(const char* path_from, const char* path_to, const char* p
             else  
             {  
                 ret_val = OPP_SKIP;  
-                print_message(MSGT_ERROR, "skip, \"%s\" mkdir failed.\n", path_to_full);
+                qCritical("skip, \"%s\" mkdir failed.\n", path_to_full);
             }  
         }  
     }  
     else  
     {  
         ret_val = OPP_SKIP;  
-        print_message(MSGT_WARNING, "skip, \"%s\" is not a file nor directory.\n", path_to_full);
+        qWarning("skip, \"%s\" is not a file nor directory.\n", path_to_full);
     }  
   
     return ret_val;  
@@ -474,7 +474,6 @@ void CopyThread::install_time()
 int CopyThread::cp_task(char *dir)
 {  
     struct stat st_src, st_dest;  
-    char human_readable_size[200];  
     char path_to_fixed[MAX_PATH_LENGTH];  
     char *path_from = nullptr, *path_to = nullptr, *file_name = nullptr;
  
@@ -483,13 +482,21 @@ int CopyThread::cp_task(char *dir)
     sum.dir = 0;  
     sum.size = 0;  
 
-    if((num > 0) && (num < 4))
+    if((num >= 0) && (num <= 3))
     {
-        path_to = "/home/wz/test";
+        path_to = "/home/wz/test1";
     }
-    else
+    else if((num >= 4) && (num <= 7))
     {
-        path_to = "/home/wz/mountpoint";
+        path_to = "/home/wz/test2";
+    }
+    else if((num >= 8) && (num <= 11))
+    {
+        path_to = "/home/wz/test3";
+    }
+    else if((num >= 12) && (num <= 15))
+    {
+        path_to = "/home/wz/test4";
     }
 
     path_from = dir;  
@@ -498,7 +505,7 @@ int CopyThread::cp_task(char *dir)
       
     if(sum.file == 0 && sum.dir == 0)  
     {  
-        printf("nothing found.\n");  
+        qInfo("nothing found.\n");
     }  
     else  
     {  
@@ -515,7 +522,7 @@ int CopyThread::cp_task(char *dir)
         /*源是否存在*/  
         if(-1 == stat(path_from, &st_src))  
         {  
-            print_message(MSGT_ERROR, "\"%s\" doesn't exist.\n", path_from);  
+            qCritical("\"%s\" doesn't exist.\n", path_from);
             return 0;  
         }  
       
@@ -536,19 +543,17 @@ int CopyThread::cp_task(char *dir)
             if(is_self_copy(path_from, path_to))  
             {  
                 /*源是目录时要防止循环复制*/  
-                print_message(MSGT_ERROR, "can't xcp \"%s\" -> \"%s\"\n", path_from, path_to);  
+                qCritical("can't xcp \"%s\" -> \"%s\"\n", path_from, path_to);
                 return 0;  
             }  
         }  
         else  
         {  
-            print_message(MSGT_WARNING, "skip \"%s\" not a file nor a directory.\n", path_from);  
+            qWarning("skip \"%s\" not a file nor a directory.\n", path_from);
             return 0;  
         }  
 
         walk_copy(path_from, path_to, nullptr);
-        //emit(sendToUI(num, sum, copied, copy_start_time, true));
-
     }  
   
     return 0;  

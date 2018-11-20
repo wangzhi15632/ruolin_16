@@ -12,7 +12,7 @@ class CopyThread : public QThread
     Q_OBJECT
 
 public:
-    CopyThread(MainWindow* window);
+    CopyThread();
     void cp_dir(char *);
 
 protected:
@@ -29,18 +29,21 @@ private:
     bool is_self_copy(const char* src, const char* dest);
     void install_time();
     int cp_task(char *dir);
-    int sum_up(const char* path_from, const char* path_to, const char* path_tree, const struct stat* st);
+    int sum_up(const char* path_tree, const struct stat* st);
     int action(const char* path_from, const char* path_to, const char* path_tree, const struct stat* st);
 
 private slots:
    void timeOutEmit(void);
+   void test();
 
 signals:
     void sendToUI(int, sum_t, copied_t, time_t, bool);
+    void sendUDevInfo(int, unsigned long, unsigned long, unsigned long);
 
 public:
     char mountDir[20];
     bool rcvFlag;
+
 private:
    sum_t sum;
    copied_t copied;
@@ -48,10 +51,6 @@ private:
    int num;
    QTimer *timer;
 
-   MainWindow *wind;
-
-signals:
-    void sendUDevInfo(int, unsigned long, unsigned long, unsigned long);
 };
 
 

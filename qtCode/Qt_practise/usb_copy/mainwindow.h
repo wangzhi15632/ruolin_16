@@ -7,6 +7,7 @@
 #include <QtCharts/QPieSeries>
 #include <QtCharts/QPieSlice>
 #include "usb_copy.h"
+#include "searchthread.h"
 
 #define USB_MAX_NUM 16
 
@@ -47,15 +48,16 @@ private:
 
 private:
     usb_t usb[USB_MAX_NUM];
+    SearchThread *searchThread;
 
 private:
     Ui::MainWindow *ui;
 
 private slots:
     void slotShow(int, unsigned long, unsigned long, unsigned long);
-    void slotProgress(int, sum_t, copied_t, time_t, bool);
+    void slotProgress(int, sum_t, copied_t, time_t);
     void slotCloseDev(int num);
-
+    void slotFindDev(char *mountPoint);
 };
 
 #endif // MAINWINDOW_H

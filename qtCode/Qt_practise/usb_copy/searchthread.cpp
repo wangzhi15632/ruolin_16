@@ -2,7 +2,6 @@
 
 SearchThread::SearchThread(QObject *parent)
 {
-    window = (MainWindow *)parent;
 }
 
 void SearchThread::run()
