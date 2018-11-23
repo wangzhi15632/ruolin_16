@@ -50,4 +50,6 @@ void CopyThread::run()
         cp_task(mountDir);
     }
     rcvFlag = false;
+
+    //exec();
 }

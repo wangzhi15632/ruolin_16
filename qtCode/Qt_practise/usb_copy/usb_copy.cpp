@@ -350,9 +350,6 @@ int CopyThread::action(const char* path_from, const char* path_to, const char* p
 
     if(S_ISREG(st->st_mode))
     {  
-        //copy->print_message(MSGT_VERBOSE, "cp \"%s\" -> \"%s\".\n", path_from_full, path_to_full);
-       // qDebug("cp \"%s\" -> \"%s\"", path_from_full, path_to_full);
-       // qDebug("copy->num:%d", num);
 		if(strcmp(path_from_full, path_to_full) == 0)  
         {  
             ret_val = OPP_SKIP;  
@@ -482,10 +479,11 @@ int CopyThread::cp_task(char *dir)
     sum.dir = 0;  
     sum.size = 0;  
 
-    if((num >= 0) && (num <= 3))
+    if((num >= 0) && (num <= 15))
     {
         path_to = "/home/wz/test1";
     }
+#if 0
     else if((num >= 4) && (num <= 7))
     {
         path_to = "/home/wz/test2";
@@ -498,7 +496,7 @@ int CopyThread::cp_task(char *dir)
     {
         path_to = "/home/wz/test4";
     }
-
+#endif
     path_from = dir;  
 
     walk_sum(path_from, path_to, nullptr);

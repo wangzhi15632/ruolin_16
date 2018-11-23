@@ -33,8 +33,9 @@ private:
     int action(const char* path_from, const char* path_to, const char* path_tree, const struct stat* st);
 
 private slots:
-   void timeOutEmit(void);
    void test();
+public slots:
+   void timeOutEmit(void);
 
 signals:
     void sendToUI(int, sum_t, copied_t, time_t, bool);
