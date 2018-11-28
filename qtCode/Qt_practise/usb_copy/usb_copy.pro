@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui charts
+QT       += core gui charts network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -31,7 +31,8 @@ SOURCES += \
     usb_copy.cpp \
     searchthread.cpp \
     copythread.cpp \
-    generatelogfile.cpp
+    generatelogfile.cpp \
+    ftpthread.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -39,7 +40,8 @@ HEADERS += \
     usb_copy.h \
     usb_main.h \
     searchthread.h \
-    copythread.h
+    copythread.h \
+    ftpthread.h
 
 FORMS += \
         mainwindow.ui

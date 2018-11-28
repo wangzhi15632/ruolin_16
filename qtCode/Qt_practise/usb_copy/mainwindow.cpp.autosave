@@ -98,7 +98,7 @@ void MainWindow::showLocalStorage()
     local.slice_2->setBrush(Qt::blue);
 }
 char* MainWindow::human_size(long long s, char *hs)
-{
+{   
     if(s >= GBYTES)
     {
         sprintf(hs, "%.2fGB", (s * 1.0) / GBYTES);

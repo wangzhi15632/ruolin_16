@@ -12,10 +12,10 @@ MAKEFILE      = Makefile
 
 CC            = gcc
 CXX           = g++
-DEFINES       = -DQT_DEPRECATED_WARNINGS -DQT_MESSAGELOGCONTEXT -DQT_NO_DEBUG -DQT_CHARTS_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
+DEFINES       = -DQT_DEPRECATED_WARNINGS -DQT_MESSAGELOGCONTEXT -DQT_NO_DEBUG -DQT_CHARTS_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -O2 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -O2 -std=gnu++11 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
-INCPATH       = -I../usb_copy -I. -I../../../../Qt5.8.0/5.8/gcc_64/include -I../../../../Qt5.8.0/5.8/gcc_64/include/QtCharts -I../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets -I../../../../Qt5.8.0/5.8/gcc_64/include/QtGui -I../../../../Qt5.8.0/5.8/gcc_64/include/QtCore -I. -isystem /usr/include/libdrm -I. -I../../../../Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++
+INCPATH       = -I../usb_copy -I. -I../../../../Qt5.8.0/5.8/gcc_64/include -I../../../../Qt5.8.0/5.8/gcc_64/include/QtCharts -I../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets -I../../../../Qt5.8.0/5.8/gcc_64/include/QtGui -I../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork -I../../../../Qt5.8.0/5.8/gcc_64/include/QtCore -I. -isystem /usr/include/libdrm -I. -I../../../../Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++
 QMAKE         = /home/wz/Qt5.8.0/5.8/gcc_64/bin/qmake
 DEL_FILE      = rm -f
 CHK_DIR_EXISTS= test -d
@@ -36,7 +36,7 @@ DISTNAME      = usb_copy1.0.0
 DISTDIR = /home/wz/code/qtCode/Qt_practise/build-usb_copy-Desktop_Qt_5_8_0_GCC_64bit-Release/.tmp/usb_copy1.0.0
 LINK          = g++
 LFLAGS        = -Wl,-O1 -Wl,-rpath,/home/wz/Qt5.8.0/5.8/gcc_64/lib
-LIBS          = $(SUBLIBS) -L/home/wz/Qt5.8.0/5.8/gcc_64/lib -lQt5Charts -lQt5Widgets -lQt5Gui -lQt5Core -lGL -lpthread 
+LIBS          = $(SUBLIBS) -L/home/wz/Qt5.8.0/5.8/gcc_64/lib -lQt5Charts -lQt5Widgets -lQt5Gui -lQt5Network -lQt5Core -lGL -lpthread 
 AR            = ar cqs
 RANLIB        = 
 SED           = sed
@@ -54,9 +54,11 @@ SOURCES       = ../usb_copy/main.cpp \
 		../usb_copy/usb_copy.cpp \
 		../usb_copy/searchthread.cpp \
 		../usb_copy/copythread.cpp \
-		../usb_copy/generatelogfile.cpp moc_mainwindow.cpp \
+		../usb_copy/generatelogfile.cpp \
+		../usb_copy/ftpthread.cpp moc_mainwindow.cpp \
 		moc_searchthread.cpp \
-		moc_copythread.cpp
+		moc_copythread.cpp \
+		moc_ftpthread.cpp
 OBJECTS       = main.o \
 		mainwindow.o \
 		usb_main.o \
@@ -64,9 +66,11 @@ OBJECTS       = main.o \
 		searchthread.o \
 		copythread.o \
 		generatelogfile.o \
+		ftpthread.o \
 		moc_mainwindow.o \
 		moc_searchthread.o \
-		moc_copythread.o
+		moc_copythread.o \
+		moc_ftpthread.o
 DIST          = ../../../../Qt5.8.0/5.8/gcc_64/mkspecs/features/spec_pre.prf \
 		../../../../Qt5.8.0/5.8/gcc_64/mkspecs/common/unix.conf \
 		../../../../Qt5.8.0/5.8/gcc_64/mkspecs/common/linux.conf \
@@ -241,13 +245,15 @@ DIST          = ../../../../Qt5.8.0/5.8/gcc_64/mkspecs/features/spec_pre.prf \
 		../usb_copy/usb_copy.h \
 		../usb_copy/usb_main.h \
 		../usb_copy/searchthread.h \
-		../usb_copy/copythread.h ../usb_copy/main.cpp \
+		../usb_copy/copythread.h \
+		../usb_copy/ftpthread.h ../usb_copy/main.cpp \
 		../usb_copy/mainwindow.cpp \
 		../usb_copy/usb_main.cpp \
 		../usb_copy/usb_copy.cpp \
 		../usb_copy/searchthread.cpp \
 		../usb_copy/copythread.cpp \
-		../usb_copy/generatelogfile.cpp
+		../usb_copy/generatelogfile.cpp \
+		../usb_copy/ftpthread.cpp
 QMAKE_TARGET  = usb_copy
 DESTDIR       = 
 TARGET        = usb_copy
@@ -432,6 +438,7 @@ Makefile: ../usb_copy/usb_copy.pro ../../../../Qt5.8.0/5.8/gcc_64/mkspecs/linux-
 		../../../../Qt5.8.0/5.8/gcc_64/lib/libQt5Charts.prl \
 		../../../../Qt5.8.0/5.8/gcc_64/lib/libQt5Widgets.prl \
 		../../../../Qt5.8.0/5.8/gcc_64/lib/libQt5Gui.prl \
+		../../../../Qt5.8.0/5.8/gcc_64/lib/libQt5Network.prl \
 		../../../../Qt5.8.0/5.8/gcc_64/lib/libQt5Core.prl
 	$(QMAKE) -o Makefile ../usb_copy/usb_copy.pro -spec linux-g++
 ../../../../Qt5.8.0/5.8/gcc_64/mkspecs/features/spec_pre.prf:
@@ -607,6 +614,7 @@ Makefile: ../usb_copy/usb_copy.pro ../../../../Qt5.8.0/5.8/gcc_64/mkspecs/linux-
 ../../../../Qt5.8.0/5.8/gcc_64/lib/libQt5Charts.prl:
 ../../../../Qt5.8.0/5.8/gcc_64/lib/libQt5Widgets.prl:
 ../../../../Qt5.8.0/5.8/gcc_64/lib/libQt5Gui.prl:
+../../../../Qt5.8.0/5.8/gcc_64/lib/libQt5Network.prl:
 ../../../../Qt5.8.0/5.8/gcc_64/lib/libQt5Core.prl:
 qmake: FORCE
 	@$(QMAKE) -o Makefile ../usb_copy/usb_copy.pro -spec linux-g++
@@ -623,8 +631,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents ../../../../Qt5.8.0/5.8/gcc_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ../usb_copy/mainwindow.h ../usb_copy/config.h ../usb_copy/usb_copy.h ../usb_copy/usb_main.h ../usb_copy/searchthread.h ../usb_copy/copythread.h $(DISTDIR)/
-	$(COPY_FILE) --parents ../usb_copy/main.cpp ../usb_copy/mainwindow.cpp ../usb_copy/usb_main.cpp ../usb_copy/usb_copy.cpp ../usb_copy/searchthread.cpp ../usb_copy/copythread.cpp ../usb_copy/generatelogfile.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../usb_copy/mainwindow.h ../usb_copy/config.h ../usb_copy/usb_copy.h ../usb_copy/usb_main.h ../usb_copy/searchthread.h ../usb_copy/copythread.h ../usb_copy/ftpthread.h $(DISTDIR)/
+	$(COPY_FILE) --parents ../usb_copy/main.cpp ../usb_copy/mainwindow.cpp ../usb_copy/usb_main.cpp ../usb_copy/usb_copy.cpp ../usb_copy/searchthread.cpp ../usb_copy/copythread.cpp ../usb_copy/generatelogfile.cpp ../usb_copy/ftpthread.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents ../usb_copy/mainwindow.ui $(DISTDIR)/
 
 
@@ -657,9 +665,9 @@ compiler_moc_predefs_clean:
 moc_predefs.h: ../../../../Qt5.8.0/5.8/gcc_64/mkspecs/features/data/dummy.cpp
 	g++ -pipe -O2 -std=gnu++11 -Wall -W -dM -E -o moc_predefs.h ../../../../Qt5.8.0/5.8/gcc_64/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: moc_mainwindow.cpp moc_searchthread.cpp moc_copythread.cpp
+compiler_moc_header_make_all: moc_mainwindow.cpp moc_searchthread.cpp moc_copythread.cpp moc_ftpthread.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_mainwindow.cpp moc_searchthread.cpp moc_copythread.cpp
+	-$(DEL_FILE) moc_mainwindow.cpp moc_searchthread.cpp moc_copythread.cpp moc_ftpthread.cpp
 moc_mainwindow.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QMainWindow \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/qmainwindow.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
@@ -1196,10 +1204,34 @@ moc_mainwindow.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QMainWindow
 		../usb_copy/usb_copy.h \
 		../usb_copy/searchthread.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QThread \
+		../usb_copy/ftpthread.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QUrl \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QFile \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkReply \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkreply.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtnetworkglobal.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtnetwork-config.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QIODevice \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QString \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkRequest \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkrequest.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkAccessManager \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkaccessmanager.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslConfiguration \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslconfiguration.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtcpsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qabstractsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslerror.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslcertificate.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qssl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QFlags \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslPreSharedKeyAuthenticator \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslpresharedkeyauthenticator.h \
 		../usb_copy/mainwindow.h \
 		moc_predefs.h \
 		../../../../Qt5.8.0/5.8/gcc_64/bin/moc
-	/home/wz/Qt5.8.0/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/wz/Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++ -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/Qt5.8.0/5.8/gcc_64/include -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCharts -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtWidgets -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtGui -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../usb_copy/mainwindow.h -o moc_mainwindow.cpp
+	/home/wz/Qt5.8.0/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/wz/Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++ -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/Qt5.8.0/5.8/gcc_64/include -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCharts -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtWidgets -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtGui -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtNetwork -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../usb_copy/mainwindow.h -o moc_mainwindow.cpp
 
 moc_searchthread.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QThread \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qthread.h \
@@ -1253,7 +1285,7 @@ moc_searchthread.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QThread \
 		../usb_copy/searchthread.h \
 		moc_predefs.h \
 		../../../../Qt5.8.0/5.8/gcc_64/bin/moc
-	/home/wz/Qt5.8.0/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/wz/Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++ -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/Qt5.8.0/5.8/gcc_64/include -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCharts -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtWidgets -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtGui -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../usb_copy/searchthread.h -o moc_searchthread.cpp
+	/home/wz/Qt5.8.0/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/wz/Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++ -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/Qt5.8.0/5.8/gcc_64/include -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCharts -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtWidgets -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtGui -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtNetwork -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../usb_copy/searchthread.h -o moc_searchthread.cpp
 
 moc_copythread.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QThread \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qthread.h \
@@ -1792,10 +1824,133 @@ moc_copythread.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QThread \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCharts/qxylegendmarker.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCharts/qtchartsversion.h \
 		../usb_copy/searchthread.h \
+		../usb_copy/ftpthread.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QUrl \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QFile \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkReply \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkreply.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtnetworkglobal.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtnetwork-config.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QIODevice \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QString \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkRequest \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkrequest.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkAccessManager \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkaccessmanager.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslConfiguration \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslconfiguration.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtcpsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qabstractsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslerror.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslcertificate.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qssl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QFlags \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslPreSharedKeyAuthenticator \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslpresharedkeyauthenticator.h \
 		../usb_copy/copythread.h \
 		moc_predefs.h \
 		../../../../Qt5.8.0/5.8/gcc_64/bin/moc
-	/home/wz/Qt5.8.0/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/wz/Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++ -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/Qt5.8.0/5.8/gcc_64/include -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCharts -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtWidgets -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtGui -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../usb_copy/copythread.h -o moc_copythread.cpp
+	/home/wz/Qt5.8.0/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/wz/Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++ -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/Qt5.8.0/5.8/gcc_64/include -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCharts -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtWidgets -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtGui -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtNetwork -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../usb_copy/copythread.h -o moc_copythread.cpp
+
+moc_ftpthread.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QUrl \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qurl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qbytearray.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qrefcount.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qatomic.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qglobal.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qconfig-bootstrapped.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qconfig.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtcore-config.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qsystemdetection.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qprocessordetection.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qcompilerdetection.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtypeinfo.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qsysinfo.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qlogging.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qflags.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtypetraits.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qglobalstatic.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qmutex.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qnumeric.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qversiontagging.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qbasicatomic.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qatomic_bootstrap.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qgenericatomic.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qatomic_cxx11.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qatomic_msvc.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qnamespace.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qarraydata.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qstring.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qchar.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qstringbuilder.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qobjectdefs.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qobjectdefs_impl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qlist.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qalgorithms.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qiterator.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qhashfunctions.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qpair.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qbytearraylist.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qstringlist.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qregexp.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qstringmatcher.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qurlquery.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qshareddata.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qhash.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QFile \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qfile.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qfiledevice.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qiodevice.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qobject.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qcoreevent.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qscopedpointer.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qmetatype.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qvarlengtharray.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qcontainerfwd.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qobject_impl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkReply \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkreply.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtnetworkglobal.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtnetwork-config.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QIODevice \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QString \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QVariant \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qvariant.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qmap.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qdebug.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtextstream.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qlocale.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qvector.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qpoint.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qset.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qcontiguouscache.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qsharedpointer.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qsharedpointer_impl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkRequest \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkrequest.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QSharedDataPointer \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkAccessManager \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkaccessmanager.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QObject \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslConfiguration \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslconfiguration.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtcpsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qabstractsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslerror.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslcertificate.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qcryptographichash.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qdatetime.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qssl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QFlags \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslPreSharedKeyAuthenticator \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslpresharedkeyauthenticator.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QMetaType \
+		../usb_copy/ftpthread.h \
+		moc_predefs.h \
+		../../../../Qt5.8.0/5.8/gcc_64/bin/moc
+	/home/wz/Qt5.8.0/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/wz/Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++ -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/Qt5.8.0/5.8/gcc_64/include -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCharts -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtWidgets -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtGui -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtNetwork -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../usb_copy/ftpthread.h -o moc_ftpthread.cpp
 
 compiler_moc_source_make_all:
 compiler_moc_source_clean:
@@ -2353,6 +2508,30 @@ main.o: ../usb_copy/main.cpp ../usb_copy/mainwindow.h \
 		../usb_copy/usb_copy.h \
 		../usb_copy/searchthread.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QThread \
+		../usb_copy/ftpthread.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QUrl \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QFile \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkReply \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkreply.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtnetworkglobal.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtnetwork-config.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QIODevice \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QString \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkRequest \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkrequest.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkAccessManager \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkaccessmanager.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslConfiguration \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslconfiguration.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtcpsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qabstractsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslerror.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslcertificate.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qssl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QFlags \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslPreSharedKeyAuthenticator \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslpresharedkeyauthenticator.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QApplication
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../usb_copy/main.cpp
 
@@ -2893,7 +3072,40 @@ mainwindow.o: ../usb_copy/mainwindow.cpp ../usb_copy/mainwindow.h \
 		../usb_copy/usb_copy.h \
 		../usb_copy/searchthread.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QThread \
+		../usb_copy/ftpthread.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QUrl \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QFile \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkReply \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkreply.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtnetworkglobal.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtnetwork-config.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QIODevice \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QString \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkRequest \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkrequest.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkAccessManager \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkaccessmanager.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslConfiguration \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslconfiguration.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtcpsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qabstractsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslerror.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslcertificate.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qssl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QFlags \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslPreSharedKeyAuthenticator \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslpresharedkeyauthenticator.h \
 		ui_mainwindow.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QAction \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QApplication \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QButtonGroup \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QGroupBox \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QHBoxLayout \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QHeaderView \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QMenuBar \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QStatusBar \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QToolBar \
 		../usb_copy/usb_main.h \
 		../usb_copy/copythread.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o ../usb_copy/mainwindow.cpp
@@ -3436,6 +3648,30 @@ usb_main.o: ../usb_copy/usb_main.cpp ../usb_copy/usb_copy.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCharts/qtchartsversion.h \
 		../usb_copy/searchthread.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QThread \
+		../usb_copy/ftpthread.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QUrl \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QFile \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkReply \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkreply.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtnetworkglobal.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtnetwork-config.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QIODevice \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QString \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkRequest \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkrequest.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkAccessManager \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkaccessmanager.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslConfiguration \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslconfiguration.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtcpsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qabstractsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslerror.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslcertificate.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qssl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QFlags \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslPreSharedKeyAuthenticator \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslpresharedkeyauthenticator.h \
 		../usb_copy/copythread.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o usb_main.o ../usb_copy/usb_main.cpp
 
@@ -3976,7 +4212,31 @@ usb_copy.o: ../usb_copy/usb_copy.cpp ../usb_copy/usb_copy.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCharts/qvxymodelmapper.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCharts/qxylegendmarker.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCharts/qtchartsversion.h \
-		../usb_copy/searchthread.h
+		../usb_copy/searchthread.h \
+		../usb_copy/ftpthread.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QUrl \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QFile \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkReply \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkreply.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtnetworkglobal.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtnetwork-config.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QIODevice \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QString \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkRequest \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkrequest.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkAccessManager \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkaccessmanager.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslConfiguration \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslconfiguration.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtcpsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qabstractsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslerror.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslcertificate.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qssl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QFlags \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslPreSharedKeyAuthenticator \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslpresharedkeyauthenticator.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o usb_copy.o ../usb_copy/usb_copy.cpp
 
 searchthread.o: ../usb_copy/searchthread.cpp ../usb_copy/searchthread.h \
@@ -4568,7 +4828,31 @@ copythread.o: ../usb_copy/copythread.cpp ../usb_copy/copythread.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCharts/qvxymodelmapper.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCharts/qxylegendmarker.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCharts/qtchartsversion.h \
-		../usb_copy/searchthread.h
+		../usb_copy/searchthread.h \
+		../usb_copy/ftpthread.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QUrl \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QFile \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkReply \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkreply.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtnetworkglobal.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtnetwork-config.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QIODevice \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QString \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkRequest \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkrequest.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkAccessManager \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkaccessmanager.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslConfiguration \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslconfiguration.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtcpsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qabstractsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslerror.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslcertificate.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qssl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QFlags \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslPreSharedKeyAuthenticator \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslpresharedkeyauthenticator.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o copythread.o ../usb_copy/copythread.cpp
 
 generatelogfile.o: ../usb_copy/generatelogfile.cpp ../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/qapplication.h \
@@ -4684,6 +4968,105 @@ generatelogfile.o: ../usb_copy/generatelogfile.cpp ../../../../Qt5.8.0/5.8/gcc_6
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QTextStream
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o generatelogfile.o ../usb_copy/generatelogfile.cpp
 
+ftpthread.o: ../usb_copy/ftpthread.cpp ../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QFileInfo \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qfileinfo.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qfile.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qfiledevice.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qiodevice.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qglobal.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qconfig-bootstrapped.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qconfig.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtcore-config.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qsystemdetection.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qprocessordetection.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qcompilerdetection.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtypeinfo.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qsysinfo.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qlogging.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qflags.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtypetraits.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qatomic.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qbasicatomic.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qatomic_bootstrap.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qgenericatomic.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qatomic_cxx11.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qatomic_msvc.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qglobalstatic.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qmutex.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qnumeric.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qversiontagging.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qobject.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qobjectdefs.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qnamespace.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qobjectdefs_impl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qstring.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qchar.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qbytearray.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qrefcount.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qarraydata.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qstringbuilder.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qlist.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qalgorithms.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qiterator.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qhashfunctions.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qpair.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qbytearraylist.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qstringlist.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qregexp.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qstringmatcher.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qcoreevent.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qscopedpointer.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qmetatype.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qvarlengtharray.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qcontainerfwd.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qobject_impl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qshareddata.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qhash.h \
+		../usb_copy/ftpthread.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QUrl \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qurl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qurlquery.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QFile \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkReply \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkreply.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtnetworkglobal.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtnetwork-config.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QIODevice \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QString \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QVariant \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qvariant.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qmap.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qdebug.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtextstream.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qlocale.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qvector.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qpoint.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qset.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qcontiguouscache.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qsharedpointer.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qsharedpointer_impl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkRequest \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkrequest.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QSharedDataPointer \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QNetworkAccessManager \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qnetworkaccessmanager.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QObject \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslConfiguration \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslconfiguration.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qtcpsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qabstractsocket.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslerror.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslcertificate.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qcryptographichash.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qdatetime.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qssl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QFlags \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslPreSharedKeyAuthenticator \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslpresharedkeyauthenticator.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QMetaType
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ftpthread.o ../usb_copy/ftpthread.cpp
+
 moc_mainwindow.o: moc_mainwindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_mainwindow.o moc_mainwindow.cpp
 
@@ -4692,6 +5075,9 @@ moc_searchthread.o: moc_searchthread.cpp
 
 moc_copythread.o: moc_copythread.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_copythread.o moc_copythread.cpp
+
+moc_ftpthread.o: moc_ftpthread.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_ftpthread.o moc_ftpthread.cpp
 
 ####### Install
 

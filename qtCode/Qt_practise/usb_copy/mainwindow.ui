@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1139</width>
-    <height>698</height>
+    <width>1548</width>
+    <height>906</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,9 +17,9 @@
    <layout class="QHBoxLayout" name="horizontalLayout_5">
     <item>
      <widget class="QWidget" name="widget" native="true">
-      <layout class="QHBoxLayout" name="horizontalLayout_6">
+      <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="3,1">
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout">
+        <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout">
            <item>
@@ -150,6 +150,40 @@
          </item>
         </layout>
        </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QGroupBox" name="groupBox_17">
+           <property name="title">
+            <string>本地存储</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="groupBox_18">
+           <property name="title">
+            <string>FTP</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_3">
+              <item>
+               <widget class="QProgressBar" name="progressBar">
+                <property name="value">
+                 <number>0</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QTextEdit" name="textEdit"/>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </item>
       </layout>
      </widget>
     </item>
@@ -160,7 +194,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1139</width>
+     <width>1548</width>
      <height>22</height>
     </rect>
    </property>
