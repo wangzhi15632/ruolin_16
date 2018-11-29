@@ -106,28 +106,7 @@ char* CopyThread::human_time(time_t t, char *text)
     return text;  
 }  
   
-/* 
-* 先清除状态文字然后在输出信息 
-* 1. 状态文字总是在当前行输出不换行 
-* 2. printerror只能在状态文字被显示之后输出，即定时器被安装之后使用。 
-*/  
-void CopyThread::print_message(int t, const char* fmt, ...)
-{  
-    char real_fmt[MAX_FMTSTR_LENGTH];  
-    va_list args;  
-    va_start(args, fmt);  
-  
-    if(t == MSGT_WARNING || t == MSGT_ERROR)  
-    {  
-        /*quiet, don't output warning nor error message*/  
-    }  
-    else  
-    {  
-        sprintf(real_fmt, "\r\033[K%s", fmt);  
-        vprintf(real_fmt, args);  
-    }  
-}  
-  
+
 /*连接目录字符串,主要处理末尾/的问题,frt snd 两个参数不能同时为空那样没有意义*/  
 char* CopyThread::make_path(char *dest, const char *frt, const char *snd)
 {  
@@ -461,11 +440,6 @@ bool CopyThread::is_self_copy(const char* src, const char* dest)
         return FALSE;  
     }  
 }  
-  
-void CopyThread::install_time()
-{
-
-}
 
 /*主函数，做两次遍历*/  
 int CopyThread::cp_task(char *dir)

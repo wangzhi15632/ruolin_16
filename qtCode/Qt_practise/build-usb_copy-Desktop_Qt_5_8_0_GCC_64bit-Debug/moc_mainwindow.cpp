@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_MainWindow_t {
-    QByteArrayData data[13];
-    char stringdata0[119];
+    QByteArrayData data[16];
+    char stringdata0[169];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -32,24 +32,28 @@ struct qt_meta_stringdata_MainWindow_t {
 static const qt_meta_stringdata_MainWindow_t qt_meta_stringdata_MainWindow = {
     {
 QT_MOC_LITERAL(0, 0, 10), // "MainWindow"
-QT_MOC_LITERAL(1, 11, 8), // "slotShow"
-QT_MOC_LITERAL(2, 20, 0), // ""
-QT_MOC_LITERAL(3, 21, 12), // "slotProgress"
-QT_MOC_LITERAL(4, 34, 5), // "sum_t"
-QT_MOC_LITERAL(5, 40, 8), // "copied_t"
-QT_MOC_LITERAL(6, 49, 6), // "time_t"
-QT_MOC_LITERAL(7, 56, 12), // "slotCloseDev"
-QT_MOC_LITERAL(8, 69, 3), // "num"
-QT_MOC_LITERAL(9, 73, 11), // "slotFindDev"
-QT_MOC_LITERAL(10, 85, 5), // "char*"
-QT_MOC_LITERAL(11, 91, 10), // "mountPoint"
-QT_MOC_LITERAL(12, 102, 16) // "showLocalStorage"
+QT_MOC_LITERAL(1, 11, 16), // "setFtpStatusFlag"
+QT_MOC_LITERAL(2, 28, 0), // ""
+QT_MOC_LITERAL(3, 29, 8), // "slotShow"
+QT_MOC_LITERAL(4, 38, 12), // "slotProgress"
+QT_MOC_LITERAL(5, 51, 5), // "sum_t"
+QT_MOC_LITERAL(6, 57, 8), // "copied_t"
+QT_MOC_LITERAL(7, 66, 6), // "time_t"
+QT_MOC_LITERAL(8, 73, 12), // "slotCloseDev"
+QT_MOC_LITERAL(9, 86, 3), // "num"
+QT_MOC_LITERAL(10, 90, 11), // "slotFindDev"
+QT_MOC_LITERAL(11, 102, 5), // "char*"
+QT_MOC_LITERAL(12, 108, 10), // "mountPoint"
+QT_MOC_LITERAL(13, 119, 16), // "showLocalStorage"
+QT_MOC_LITERAL(14, 136, 20), // "emitToFtpTranslation"
+QT_MOC_LITERAL(15, 157, 11) // "starFtpTime"
 
     },
-    "MainWindow\0slotShow\0\0slotProgress\0"
-    "sum_t\0copied_t\0time_t\0slotCloseDev\0"
-    "num\0slotFindDev\0char*\0mountPoint\0"
-    "showLocalStorage"
+    "MainWindow\0setFtpStatusFlag\0\0slotShow\0"
+    "slotProgress\0sum_t\0copied_t\0time_t\0"
+    "slotCloseDev\0num\0slotFindDev\0char*\0"
+    "mountPoint\0showLocalStorage\0"
+    "emitToFtpTranslation\0starFtpTime"
 };
 #undef QT_MOC_LITERAL
 
@@ -59,25 +63,35 @@ static const uint qt_meta_data_MainWindow[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-       5,   14, // methods
+       8,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       0,       // signalCount
+       1,       // signalCount
+
+ // signals: name, argc, parameters, tag, flags
+       1,    1,   54,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       1,    4,   39,    2, 0x08 /* Private */,
-       3,    4,   48,    2, 0x08 /* Private */,
-       7,    1,   57,    2, 0x08 /* Private */,
-       9,    1,   60,    2, 0x08 /* Private */,
-      12,    0,   63,    2, 0x08 /* Private */,
+       3,    4,   57,    2, 0x08 /* Private */,
+       4,    4,   66,    2, 0x08 /* Private */,
+       8,    1,   75,    2, 0x08 /* Private */,
+      10,    1,   78,    2, 0x08 /* Private */,
+      13,    0,   81,    2, 0x08 /* Private */,
+      14,    0,   82,    2, 0x08 /* Private */,
+      15,    0,   83,    2, 0x08 /* Private */,
+
+ // signals: parameters
+    QMetaType::Void, QMetaType::Int,    2,
 
  // slots: parameters
     QMetaType::Void, QMetaType::Int, QMetaType::ULong, QMetaType::ULong, QMetaType::ULong,    2,    2,    2,    2,
-    QMetaType::Void, QMetaType::Int, 0x80000000 | 4, 0x80000000 | 5, 0x80000000 | 6,    2,    2,    2,    2,
-    QMetaType::Void, QMetaType::Int,    8,
-    QMetaType::Void, 0x80000000 | 10,   11,
+    QMetaType::Void, QMetaType::Int, 0x80000000 | 5, 0x80000000 | 6, 0x80000000 | 7,    2,    2,    2,    2,
+    QMetaType::Void, QMetaType::Int,    9,
+    QMetaType::Void, 0x80000000 | 11,   12,
+    QMetaType::Void,
+    QMetaType::Void,
     QMetaType::Void,
 
        0        // eod
@@ -89,12 +103,25 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         MainWindow *_t = static_cast<MainWindow *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
-        case 0: _t->slotShow((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< ulong(*)>(_a[2])),(*reinterpret_cast< ulong(*)>(_a[3])),(*reinterpret_cast< ulong(*)>(_a[4]))); break;
-        case 1: _t->slotProgress((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< sum_t(*)>(_a[2])),(*reinterpret_cast< copied_t(*)>(_a[3])),(*reinterpret_cast< time_t(*)>(_a[4]))); break;
-        case 2: _t->slotCloseDev((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 3: _t->slotFindDev((*reinterpret_cast< char*(*)>(_a[1]))); break;
-        case 4: _t->showLocalStorage(); break;
+        case 0: _t->setFtpStatusFlag((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 1: _t->slotShow((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< ulong(*)>(_a[2])),(*reinterpret_cast< ulong(*)>(_a[3])),(*reinterpret_cast< ulong(*)>(_a[4]))); break;
+        case 2: _t->slotProgress((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< sum_t(*)>(_a[2])),(*reinterpret_cast< copied_t(*)>(_a[3])),(*reinterpret_cast< time_t(*)>(_a[4]))); break;
+        case 3: _t->slotCloseDev((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 4: _t->slotFindDev((*reinterpret_cast< char*(*)>(_a[1]))); break;
+        case 5: _t->showLocalStorage(); break;
+        case 6: _t->emitToFtpTranslation(); break;
+        case 7: _t->starFtpTime(); break;
         default: ;
+        }
+    } else if (_c == QMetaObject::IndexOfMethod) {
+        int *result = reinterpret_cast<int *>(_a[0]);
+        void **func = reinterpret_cast<void **>(_a[1]);
+        {
+            typedef void (MainWindow::*_t)(int );
+            if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&MainWindow::setFtpStatusFlag)) {
+                *result = 0;
+                return;
+            }
         }
     }
 }
@@ -124,15 +151,22 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 5)
+        if (_id < 8)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 5;
+        _id -= 8;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 5)
+        if (_id < 8)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 5;
+        _id -= 8;
     }
     return _id;
+}
+
+// SIGNAL 0
+void MainWindow::setFtpStatusFlag(int _t1)
+{
+    void *_a[] = { Q_NULLPTR, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
+    QMetaObject::activate(this, &staticMetaObject, 0, _a);
 }
 QT_WARNING_POP
 QT_END_MOC_NAMESPACE

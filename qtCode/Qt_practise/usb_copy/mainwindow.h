@@ -12,6 +12,7 @@
 
 #define USB_MAX_NUM 16
 
+extern QSemaphore CopyThreadNum;
 typedef struct
 {
     QPieSlice *slice_1, *slice_2;
@@ -66,16 +67,22 @@ private:
     SearchThread *searchThread;
     FtpManager *ftpThread;
     QProgressBar *ftpProgressBar;
+    QTimer *timer;
+    QTimer *timer_ftp;
 
 private:
     Ui::MainWindow *ui;
 
+signals:
+    void setFtpStatusFlag(int);
 private slots:
     void slotShow(int, unsigned long, unsigned long, unsigned long);
     void slotProgress(int, sum_t, copied_t, time_t);
     void slotCloseDev(int num);
     void slotFindDev(char *mountPoint);
     void showLocalStorage();
+    void emitToFtpTranslation();
+    void starFtpTime();
 };
 
 #endif // MAINWINDOW_H

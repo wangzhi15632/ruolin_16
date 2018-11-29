@@ -20,14 +20,10 @@ void CopyThread::cp_dir(char *mountPoint)
     rcvFlag = true;
 }
 
-void CopyThread::timeOutEmit(void)
-{
-    qDebug("aaaaaa");
-    //emit(sendToUI(sum, copied, copy_start_time, false));
-}
-
 void CopyThread::run()
 {
+    CopyThreadNum.acquire();
+
     if(rcvFlag)
     {
         struct statfs s;
@@ -50,6 +46,8 @@ void CopyThread::run()
         cp_task(mountDir);
     }
     rcvFlag = false;
+
+    CopyThreadNum.release();
 
     //exec();
 }

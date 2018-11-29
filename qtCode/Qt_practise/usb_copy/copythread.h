@@ -20,12 +20,9 @@ protected:
 private:
     int dir_is_empty(char* dirname);
     char* human_time(time_t t, char *text);
-    void print_message(int t, const char* fmt, ...);
     char* make_path(char *dest, const char *frt, const char *snd);
-    void show_status(BOOL finish);
     int walk_sum(const char* path_from, const char* path_to, const char* path_tree);
     int walk_copy(const char* path_from, const char* path_to, const char* path_tree);
-    //int walk(const char* path_from, const char* path_to, const char* path_tree, each_opp_t opp);
     bool is_self_copy(const char* src, const char* dest);
     void install_time();
     int cp_task(char *dir);
@@ -34,8 +31,6 @@ private:
 
 private slots:
    void test();
-public slots:
-   void timeOutEmit(void);
 
 signals:
     void sendToUI(int, sum_t, copied_t, time_t, bool);
@@ -50,7 +45,6 @@ private:
    copied_t copied;
    time_t copy_start_time;
    int num;
-   QTimer *timer;
 
 };
 

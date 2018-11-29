@@ -7,6 +7,9 @@
 #include "ftpthread.h"
 #include <QChartView>
 #include <sys/statfs.h>
+#include <QSemaphore>
+
+QSemaphore CopyThreadNum(USB_MAX_NUM);
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -24,6 +27,12 @@ MainWindow::~MainWindow()
 void MainWindow::slotFindDev(char *mountPoint)
 {
     qInfo("find a usb dev moutpoint:%s", mountPoint);
+
+    if(timer_ftp->isActive())
+    {
+        timer_ftp->stop();
+        emit setFtpStatusFlag(FTP_REACQURE);
+    }
 
     CopyThread *copyThread = new CopyThread();//can't add this parameter
 
@@ -96,6 +105,20 @@ void MainWindow::showLocalStorage()
     local.slice_1->setBrush(Qt::lightGray);
     local.slice_2->setValue((1-  static_cast<double>(s.f_bfree)/static_cast<double>(s.f_blocks)));
     local.slice_2->setBrush(Qt::blue);
+}
+
+void MainWindow::emitToFtpTranslation()
+{
+    timer_ftp->stop();
+
+    emit setFtpStatusFlag(FTP_UPLOAD);
+}
+
+void MainWindow::starFtpTime()
+{
+    //FTP上传倒计时300S
+    timer_ftp->start(3000);
+    //ui->textEdit->setText("aaa");
 }
 char* MainWindow::human_size(long long s, char *hs)
 {
@@ -190,18 +213,28 @@ void MainWindow::init()
 
     searchThread->start();
 
+    /*创建FTP线程*/
     ftpThread = new FtpManager(this);
     connect(ftpThread, SIGNAL(finished()), ftpThread, SLOT(deleteLater()));
+    connect(ftpThread, SIGNAL(starCountingDown()), this, SLOT(starFtpTime()));
+    connect(this, SIGNAL(setFtpStatusFlag(int)), ftpThread, SLOT(ftpStatusFlag(int)));
+
+    ftpThread->start();
 
 }
 
 void MainWindow::initTimer()
 {
-    QTimer *timer = new QTimer(this);
+    /*timer 用来更新本地存储界面*/
+    timer = new QTimer(this);
 
     connect(timer, SIGNAL(timeout()), this, SLOT(showLocalStorage()));
-
     timer->start(10000);
+
+    /*timer_ftp用来进行倒计时开始FTP上传文件*/
+    timer_ftp = new QTimer(this);
+
+    connect(timer_ftp, SIGNAL(timeout()), this, SLOT(emitToFtpTranslation()));
 }
 
 QGroupBox* MainWindow::groupBox(int i)
