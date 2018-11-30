@@ -16,6 +16,7 @@ protected:
 private:
     void read_mount_point(void);
     void read_unmount_point(void);
+    void check_ftp_transmission(void);
 
 public:
     char mountPoint[20];
@@ -23,7 +24,8 @@ public:
 signals:
     void sendUnmountNum(int);
     void sendMountNum(char *);
-
+    //开始倒计时
+    void starCountingDown();
 };
 
 #endif // SEARCHTHREAD_H

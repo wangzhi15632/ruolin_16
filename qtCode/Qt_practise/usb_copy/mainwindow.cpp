@@ -1,15 +1,18 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "usb_main.h"
-#include <pthread.h>
 #include "searchthread.h"
 #include "copythread.h"
 #include "ftpthread.h"
 #include <QChartView>
 #include <sys/statfs.h>
 #include <QSemaphore>
+#include <QThread>
 
 QSemaphore CopyThreadNum(USB_MAX_NUM);
+QNetworkAccessManager accessManager;
+bool ftpFlag = true;
+QMutex mutex;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -31,7 +34,6 @@ void MainWindow::slotFindDev(char *mountPoint)
     if(timer_ftp->isActive())
     {
         timer_ftp->stop();
-        emit setFtpStatusFlag(FTP_REACQURE);
     }
 
     CopyThread *copyThread = new CopyThread();//can't add this parameter
@@ -111,14 +113,13 @@ void MainWindow::emitToFtpTranslation()
 {
     timer_ftp->stop();
 
-    emit setFtpStatusFlag(FTP_UPLOAD);
+    emit starFtpTransmission();
 }
 
 void MainWindow::starFtpTime()
 {
     //FTP上传倒计时300S
     timer_ftp->start(3000);
-    //ui->textEdit->setText("aaa");
 }
 char* MainWindow::human_size(long long s, char *hs)
 {
@@ -180,6 +181,8 @@ void MainWindow::slotProgress(int i, sum_t sum, copied_t copied, time_t copy_sta
 
 void MainWindow::init()
 {
+    qDebug() << "main thread: " << QThread::currentThread();
+
     /*config mainWindow size and title*/
     setWindowTitle(tr("16路转储平台 V1.0"));
     setMinimumSize(QSize(1000, 800));
@@ -210,17 +213,24 @@ void MainWindow::init()
     connect(searchThread, SIGNAL(finished()), searchThread, SLOT(deleteLater()));
     connect(searchThread, SIGNAL(sendUnmountNum(int)), this, SLOT(slotCloseDev(int)));
     connect(searchThread, SIGNAL(sendMountNum(char *)), this, SLOT(slotFindDev(char *)));
+    connect(searchThread, SIGNAL(starCountingDown()), this, SLOT(starFtpTime()));
 
     searchThread->start();
 
     /*创建FTP线程*/
-    ftpThread = new FtpManager(this);
+    ftpThread = new QThread(this);
+    ftpWork = new FtpManager();
+
+  //  accessManager.setNetworkAccessible(QNetworkAccessManager::Accessible);
+
     connect(ftpThread, SIGNAL(finished()), ftpThread, SLOT(deleteLater()));
-    connect(ftpThread, SIGNAL(starCountingDown()), this, SLOT(starFtpTime()));
-    connect(this, SIGNAL(setFtpStatusFlag(int)), ftpThread, SLOT(ftpStatusFlag(int)));
+    connect(this, SIGNAL(starFtpTransmission()), ftpWork, SLOT(transmission_task()));
+  //  connect(&accessManager, SIGNAL(finished(QNetworkReply*)), ftpWork,SLOT(replyFinished(QNetworkReply*)));
+
+    ftpWork->moveToThread(ftpThread);
+   // accessManager.moveToThread(ftpThread);
 
     ftpThread->start();
-
 }
 
 void MainWindow::initTimer()

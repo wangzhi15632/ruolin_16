@@ -22,7 +22,7 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_FtpManager_t {
     QByteArrayData data[13];
-    char stringdata0[173];
+    char stringdata0[170];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -40,17 +40,17 @@ QT_MOC_LITERAL(5, 61, 9), // "bytesSent"
 QT_MOC_LITERAL(6, 71, 10), // "bytesTotal"
 QT_MOC_LITERAL(7, 82, 16), // "downloadProgress"
 QT_MOC_LITERAL(8, 99, 13), // "bytesReceived"
-QT_MOC_LITERAL(9, 113, 16), // "starCountingDown"
-QT_MOC_LITERAL(10, 130, 13), // "replyFinished"
-QT_MOC_LITERAL(11, 144, 14), // "QNetworkReply*"
-QT_MOC_LITERAL(12, 159, 13) // "ftpStatusFlag"
+QT_MOC_LITERAL(9, 113, 13), // "replyFinished"
+QT_MOC_LITERAL(10, 127, 14), // "QNetworkReply*"
+QT_MOC_LITERAL(11, 142, 9), // "loadError"
+QT_MOC_LITERAL(12, 152, 17) // "transmission_task"
 
     },
     "FtpManager\0error\0\0QNetworkReply::NetworkError\0"
     "uploadProgress\0bytesSent\0bytesTotal\0"
     "downloadProgress\0bytesReceived\0"
-    "starCountingDown\0replyFinished\0"
-    "QNetworkReply*\0ftpStatusFlag"
+    "replyFinished\0QNetworkReply*\0loadError\0"
+    "transmission_task"
 };
 #undef QT_MOC_LITERAL
 
@@ -65,27 +65,27 @@ static const uint qt_meta_data_FtpManager[] = {
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       4,       // signalCount
+       3,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
        1,    1,   44,    2, 0x06 /* Public */,
        4,    2,   47,    2, 0x06 /* Public */,
        7,    2,   52,    2, 0x06 /* Public */,
-       9,    0,   57,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-      10,    1,   58,    2, 0x08 /* Private */,
-      12,    1,   61,    2, 0x08 /* Private */,
+       9,    1,   57,    2, 0x08 /* Private */,
+      11,    1,   60,    2, 0x08 /* Private */,
+      12,    0,   63,    2, 0x08 /* Private */,
 
  // signals: parameters
     QMetaType::Void, 0x80000000 | 3,    2,
     QMetaType::Void, QMetaType::LongLong, QMetaType::LongLong,    5,    6,
     QMetaType::Void, QMetaType::LongLong, QMetaType::LongLong,    8,    6,
-    QMetaType::Void,
 
  // slots: parameters
-    QMetaType::Void, 0x80000000 | 11,    2,
-    QMetaType::Void, QMetaType::Int,    2,
+    QMetaType::Void, 0x80000000 | 10,    2,
+    QMetaType::Void, 0x80000000 | 3,    2,
+    QMetaType::Void,
 
        0        // eod
 };
@@ -99,9 +99,9 @@ void FtpManager::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 0: _t->error((*reinterpret_cast< QNetworkReply::NetworkError(*)>(_a[1]))); break;
         case 1: _t->uploadProgress((*reinterpret_cast< qint64(*)>(_a[1])),(*reinterpret_cast< qint64(*)>(_a[2]))); break;
         case 2: _t->downloadProgress((*reinterpret_cast< qint64(*)>(_a[1])),(*reinterpret_cast< qint64(*)>(_a[2]))); break;
-        case 3: _t->starCountingDown(); break;
-        case 4: _t->replyFinished((*reinterpret_cast< QNetworkReply*(*)>(_a[1]))); break;
-        case 5: _t->ftpStatusFlag((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 3: _t->replyFinished((*reinterpret_cast< QNetworkReply*(*)>(_a[1]))); break;
+        case 4: _t->loadError((*reinterpret_cast< QNetworkReply::NetworkError(*)>(_a[1]))); break;
+        case 5: _t->transmission_task(); break;
         default: ;
         }
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
@@ -114,11 +114,18 @@ void FtpManager::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
                 *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QNetworkReply::NetworkError >(); break;
             }
             break;
-        case 4:
+        case 3:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<int*>(_a[0]) = -1; break;
             case 0:
                 *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QNetworkReply* >(); break;
+            }
+            break;
+        case 4:
+            switch (*reinterpret_cast<int*>(_a[1])) {
+            default: *reinterpret_cast<int*>(_a[0]) = -1; break;
+            case 0:
+                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QNetworkReply::NetworkError >(); break;
             }
             break;
         }
@@ -146,18 +153,11 @@ void FtpManager::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
                 return;
             }
         }
-        {
-            typedef void (FtpManager::*_t)();
-            if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&FtpManager::starCountingDown)) {
-                *result = 3;
-                return;
-            }
-        }
     }
 }
 
 const QMetaObject FtpManager::staticMetaObject = {
-    { &QThread::staticMetaObject, qt_meta_stringdata_FtpManager.data,
+    { &QObject::staticMetaObject, qt_meta_stringdata_FtpManager.data,
       qt_meta_data_FtpManager,  qt_static_metacall, Q_NULLPTR, Q_NULLPTR}
 };
 
@@ -172,12 +172,12 @@ void *FtpManager::qt_metacast(const char *_clname)
     if (!_clname) return Q_NULLPTR;
     if (!strcmp(_clname, qt_meta_stringdata_FtpManager.stringdata0))
         return static_cast<void*>(const_cast< FtpManager*>(this));
-    return QThread::qt_metacast(_clname);
+    return QObject::qt_metacast(_clname);
 }
 
 int FtpManager::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
-    _id = QThread::qt_metacall(_c, _id, _a);
+    _id = QObject::qt_metacall(_c, _id, _a);
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
@@ -211,12 +211,6 @@ void FtpManager::downloadProgress(qint64 _t1, qint64 _t2)
 {
     void *_a[] = { Q_NULLPTR, const_cast<void*>(reinterpret_cast<const void*>(&_t1)), const_cast<void*>(reinterpret_cast<const void*>(&_t2)) };
     QMetaObject::activate(this, &staticMetaObject, 2, _a);
-}
-
-// SIGNAL 3
-void FtpManager::starCountingDown()
-{
-    QMetaObject::activate(this, &staticMetaObject, 3, Q_NULLPTR);
 }
 QT_WARNING_POP
 QT_END_MOC_NAMESPACE

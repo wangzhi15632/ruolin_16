@@ -22,7 +22,7 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_MainWindow_t {
     QByteArrayData data[16];
-    char stringdata0[169];
+    char stringdata0[172];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -32,27 +32,27 @@ struct qt_meta_stringdata_MainWindow_t {
 static const qt_meta_stringdata_MainWindow_t qt_meta_stringdata_MainWindow = {
     {
 QT_MOC_LITERAL(0, 0, 10), // "MainWindow"
-QT_MOC_LITERAL(1, 11, 16), // "setFtpStatusFlag"
-QT_MOC_LITERAL(2, 28, 0), // ""
-QT_MOC_LITERAL(3, 29, 8), // "slotShow"
-QT_MOC_LITERAL(4, 38, 12), // "slotProgress"
-QT_MOC_LITERAL(5, 51, 5), // "sum_t"
-QT_MOC_LITERAL(6, 57, 8), // "copied_t"
-QT_MOC_LITERAL(7, 66, 6), // "time_t"
-QT_MOC_LITERAL(8, 73, 12), // "slotCloseDev"
-QT_MOC_LITERAL(9, 86, 3), // "num"
-QT_MOC_LITERAL(10, 90, 11), // "slotFindDev"
-QT_MOC_LITERAL(11, 102, 5), // "char*"
-QT_MOC_LITERAL(12, 108, 10), // "mountPoint"
-QT_MOC_LITERAL(13, 119, 16), // "showLocalStorage"
-QT_MOC_LITERAL(14, 136, 20), // "emitToFtpTranslation"
-QT_MOC_LITERAL(15, 157, 11) // "starFtpTime"
+QT_MOC_LITERAL(1, 11, 19), // "starFtpTransmission"
+QT_MOC_LITERAL(2, 31, 0), // ""
+QT_MOC_LITERAL(3, 32, 8), // "slotShow"
+QT_MOC_LITERAL(4, 41, 12), // "slotProgress"
+QT_MOC_LITERAL(5, 54, 5), // "sum_t"
+QT_MOC_LITERAL(6, 60, 8), // "copied_t"
+QT_MOC_LITERAL(7, 69, 6), // "time_t"
+QT_MOC_LITERAL(8, 76, 12), // "slotCloseDev"
+QT_MOC_LITERAL(9, 89, 3), // "num"
+QT_MOC_LITERAL(10, 93, 11), // "slotFindDev"
+QT_MOC_LITERAL(11, 105, 5), // "char*"
+QT_MOC_LITERAL(12, 111, 10), // "mountPoint"
+QT_MOC_LITERAL(13, 122, 16), // "showLocalStorage"
+QT_MOC_LITERAL(14, 139, 20), // "emitToFtpTranslation"
+QT_MOC_LITERAL(15, 160, 11) // "starFtpTime"
 
     },
-    "MainWindow\0setFtpStatusFlag\0\0slotShow\0"
-    "slotProgress\0sum_t\0copied_t\0time_t\0"
-    "slotCloseDev\0num\0slotFindDev\0char*\0"
-    "mountPoint\0showLocalStorage\0"
+    "MainWindow\0starFtpTransmission\0\0"
+    "slotShow\0slotProgress\0sum_t\0copied_t\0"
+    "time_t\0slotCloseDev\0num\0slotFindDev\0"
+    "char*\0mountPoint\0showLocalStorage\0"
     "emitToFtpTranslation\0starFtpTime"
 };
 #undef QT_MOC_LITERAL
@@ -71,19 +71,19 @@ static const uint qt_meta_data_MainWindow[] = {
        1,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    1,   54,    2, 0x06 /* Public */,
+       1,    0,   54,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       3,    4,   57,    2, 0x08 /* Private */,
-       4,    4,   66,    2, 0x08 /* Private */,
-       8,    1,   75,    2, 0x08 /* Private */,
-      10,    1,   78,    2, 0x08 /* Private */,
-      13,    0,   81,    2, 0x08 /* Private */,
-      14,    0,   82,    2, 0x08 /* Private */,
-      15,    0,   83,    2, 0x08 /* Private */,
+       3,    4,   55,    2, 0x08 /* Private */,
+       4,    4,   64,    2, 0x08 /* Private */,
+       8,    1,   73,    2, 0x08 /* Private */,
+      10,    1,   76,    2, 0x08 /* Private */,
+      13,    0,   79,    2, 0x08 /* Private */,
+      14,    0,   80,    2, 0x08 /* Private */,
+      15,    0,   81,    2, 0x08 /* Private */,
 
  // signals: parameters
-    QMetaType::Void, QMetaType::Int,    2,
+    QMetaType::Void,
 
  // slots: parameters
     QMetaType::Void, QMetaType::Int, QMetaType::ULong, QMetaType::ULong, QMetaType::ULong,    2,    2,    2,    2,
@@ -103,7 +103,7 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         MainWindow *_t = static_cast<MainWindow *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
-        case 0: _t->setFtpStatusFlag((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 0: _t->starFtpTransmission(); break;
         case 1: _t->slotShow((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< ulong(*)>(_a[2])),(*reinterpret_cast< ulong(*)>(_a[3])),(*reinterpret_cast< ulong(*)>(_a[4]))); break;
         case 2: _t->slotProgress((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< sum_t(*)>(_a[2])),(*reinterpret_cast< copied_t(*)>(_a[3])),(*reinterpret_cast< time_t(*)>(_a[4]))); break;
         case 3: _t->slotCloseDev((*reinterpret_cast< int(*)>(_a[1]))); break;
@@ -117,8 +117,8 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         int *result = reinterpret_cast<int *>(_a[0]);
         void **func = reinterpret_cast<void **>(_a[1]);
         {
-            typedef void (MainWindow::*_t)(int );
-            if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&MainWindow::setFtpStatusFlag)) {
+            typedef void (MainWindow::*_t)();
+            if (*reinterpret_cast<_t *>(func) == static_cast<_t>(&MainWindow::starFtpTransmission)) {
                 *result = 0;
                 return;
             }
@@ -163,10 +163,9 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 }
 
 // SIGNAL 0
-void MainWindow::setFtpStatusFlag(int _t1)
+void MainWindow::starFtpTransmission()
 {
-    void *_a[] = { Q_NULLPTR, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
-    QMetaObject::activate(this, &staticMetaObject, 0, _a);
+    QMetaObject::activate(this, &staticMetaObject, 0, Q_NULLPTR);
 }
 QT_WARNING_POP
 QT_END_MOC_NAMESPACE

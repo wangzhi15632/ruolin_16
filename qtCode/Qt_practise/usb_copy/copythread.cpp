@@ -12,6 +12,7 @@ CopyThread::CopyThread()
 void CopyThread::test()
 {
     qDebug("end!!!! num:%d", this->num);
+    qDebug() << "copy thread" << currentThread();
 }
 
 void CopyThread::cp_dir(char *mountPoint)
@@ -49,5 +50,7 @@ void CopyThread::run()
 
     CopyThreadNum.release();
 
-    //exec();
+    mutex.lock();
+    ftpFlag = true;
+    mutex.unlock();
 }

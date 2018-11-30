@@ -81,4 +81,25 @@ void SearchThread::read_unmount_point(void)
     }
 }
 
+void SearchThread::check_ftp_transmission(void)
+{
+    mutex.lock();
+    if(ftpFlag == false)
+        return;
+    mutex.unlock();
+
+    /*获取到最大资源证明现在没有拷贝线程*/
+    if(CopyThreadNum.tryAcquire(USB_MAX_NUM) == true)
+    {
+        emit starCountingDown();
+        /*开启倒计时后释放资源*/
+        CopyThreadNum.release(USB_MAX_NUM);
+
+        mutex.lock();
+        ftpFlag = false;
+        mutex.unlock();
+    }
+}
+
+
 

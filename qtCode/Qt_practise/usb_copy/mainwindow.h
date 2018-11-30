@@ -9,10 +9,15 @@
 #include "usb_copy.h"
 #include "searchthread.h"
 #include "ftpthread.h"
+#include <QNetworkReply>
 
 #define USB_MAX_NUM 16
 
 extern QSemaphore CopyThreadNum;
+extern QNetworkAccessManager accessManager;
+extern bool ftpFlag;
+extern QMutex mutex;
+
 typedef struct
 {
     QPieSlice *slice_1, *slice_2;
@@ -65,7 +70,10 @@ private:
     local_t local;
     usb_t usb[USB_MAX_NUM];
     SearchThread *searchThread;
-    FtpManager *ftpThread;
+
+    QThread *ftpThread;
+    FtpManager *ftpWork;
+
     QProgressBar *ftpProgressBar;
     QTimer *timer;
     QTimer *timer_ftp;
@@ -74,7 +82,7 @@ private:
     Ui::MainWindow *ui;
 
 signals:
-    void setFtpStatusFlag(int);
+    void starFtpTransmission();
 private slots:
     void slotShow(int, unsigned long, unsigned long, unsigned long);
     void slotProgress(int, sum_t, copied_t, time_t);
