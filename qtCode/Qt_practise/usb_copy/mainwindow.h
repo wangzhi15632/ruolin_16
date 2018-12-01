@@ -14,7 +14,6 @@
 #define USB_MAX_NUM 16
 
 extern QSemaphore CopyThreadNum;
-extern QNetworkAccessManager accessManager;
 extern bool ftpFlag;
 extern QMutex mutex;
 

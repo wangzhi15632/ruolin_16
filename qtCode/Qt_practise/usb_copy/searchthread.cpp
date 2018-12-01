@@ -1,4 +1,5 @@
 #include "searchthread.h"
+#include <QDebug>
 
 SearchThread::SearchThread(QObject *parent)
 {

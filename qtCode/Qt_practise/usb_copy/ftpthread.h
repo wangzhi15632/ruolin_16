@@ -6,6 +6,7 @@
 #include <QNetworkReply>
 #include <QNetworkAccessManager>
 #include <QThread>
+#include <QMutex>
 
 #define FTP_REACQURE 1
 #define FTP_UPLOAD  2
@@ -36,8 +37,6 @@ public:
     void setUserInfo(const QString &userName, const QString &password);
     // 上传文件
     void put(const QString &fileName, const QString &path);
-    // 下载文件
-    void get(const QString &path, const QString &fileName);
 
     //遍历汇总
     int walk_sum(const char* path_from, const char* path_tree);
@@ -52,8 +51,6 @@ signals:
     void error(QNetworkReply::NetworkError);
     // 上传进度
     void uploadProgress(qint64 bytesSent, qint64 bytesTotal);
-    // 下载进度
-    void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 
 private slots:
     // 下载过程中写文件
@@ -62,20 +59,20 @@ private slots:
     //启动传输任务
     void transmission_task();
 
-
 private:
+    QFile *file;
     QUrl m_pUrl;
-    QFile m_file;
+    QByteArray byte_file;
+    QNetworkReply *pReply;
+    QNetworkAccessManager *accessManager1;
 
     ftpSum_t sum;
     ftpTransmission_t transmission;
     time_t transmission_start_time;
-    QNetworkReply *pReply;
     QString ftpDir;
     QString host;
 
-    QFile *file;
-    QByteArray byte_file;
+    QMutex ftp_mutex;
 
 };
 

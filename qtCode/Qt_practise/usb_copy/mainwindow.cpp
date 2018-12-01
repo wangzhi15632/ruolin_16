@@ -10,7 +10,6 @@
 #include <QThread>
 
 QSemaphore CopyThreadNum(USB_MAX_NUM);
-QNetworkAccessManager accessManager;
 bool ftpFlag = true;
 QMutex mutex;
 
@@ -221,14 +220,10 @@ void MainWindow::init()
     ftpThread = new QThread(this);
     ftpWork = new FtpManager();
 
-  //  accessManager.setNetworkAccessible(QNetworkAccessManager::Accessible);
-
     connect(ftpThread, SIGNAL(finished()), ftpThread, SLOT(deleteLater()));
     connect(this, SIGNAL(starFtpTransmission()), ftpWork, SLOT(transmission_task()));
-  //  connect(&accessManager, SIGNAL(finished(QNetworkReply*)), ftpWork,SLOT(replyFinished(QNetworkReply*)));
 
     ftpWork->moveToThread(ftpThread);
-   // accessManager.moveToThread(ftpThread);
 
     ftpThread->start();
 }

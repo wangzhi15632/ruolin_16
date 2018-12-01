@@ -5,42 +5,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
-#if 0
-void FtpManager::run()
-{
-    while(1)
-    {
-        qDebug("ftp run");
-        /*获取到最大资源证明现在没有拷贝线程*/
-        CopyThreadNum.acquire(USB_MAX_NUM);
-        qDebug("acquire 16");
-        emit starCountingDown();
-        ftpThreadFlag = 0;
-        /*开启倒计时后释放资源*/
-        CopyThreadNum.release(USB_MAX_NUM);
-        /*等待主线程给信号是FTP上传还是重新获取资源*/
-        while(ftpThreadFlag == 0)
-        {
-            qDebug("wait flag");
-            sleep(1);
-            continue;
-        }
 
-        if(ftpThreadFlag == FTP_REACQURE)
-            continue;
-        else if(ftpThreadFlag == FTP_UPLOAD)
-        {
-            /*重新获取信号量，如果获取失败，重头执行*/
-            if(CopyThreadNum.tryAcquire(USB_MAX_NUM) == false)
-                continue;
-
-            qDebug("star transmission");
-            /*开始启动传输任务*/
-            transmission_task();
-        }
-    }
-}
-#endif
 char* FtpManager::make_path(char *dest, const char *frt, const char *snd)
 {
     if(nullptr == frt || strlen(frt) == 0)
@@ -64,8 +29,6 @@ char* FtpManager::make_path(char *dest, const char *frt, const char *snd)
     }
     return dest;
 }
-
-
 
 int FtpManager::walk_transmisson(const char* path_from, const char* path_tree)
 {
@@ -150,6 +113,7 @@ int FtpManager::transmission_action(const char* path_from, const char* path_tree
 
     if(S_ISREG(st->st_mode))
     {
+        ftp_mutex.lock();
         qDebug("file:%s", path_from_full);
         put(path_from_full, nullptr);
     }
@@ -265,6 +229,8 @@ int FtpManager::sum_up(const char* path_tree, const struct stat* st)
 FtpManager::FtpManager()
 {
     // 设置协议
+    m_pUrl.setScheme("ftp");
+    setHostPort("192.168.1.30", 21);
 }
 // 设置地址和端口
 void FtpManager::setHostPort(const QString &host, int port)
@@ -281,66 +247,20 @@ void FtpManager::setUserInfo(const QString &userName, const QString &password)
 // 上传文件
 void FtpManager::put(const QString &fileName, const QString &path)
 {
-//    file = new QFile("/home/wz/test1/88.txt");
-//    file->open(QIODevice::ReadOnly);
-//    QByteArray data = file->readAll();
-//    m_pUrl.setPath(path);
-//    m_manager = new QNetworkAccessManager();
-//    pReply = m_manager->put(QNetworkRequest(m_pUrl), data);
-//    connect(m_manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
-//    //connect(pReply, SIGNAL(uploadProgress(qint64, qint64)), this, SIGNAL(uploadProgress(qint64, qint64)));
-//    //connect(pReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SIGNAL(error(QNetworkReply::NetworkError)));
-//    connect(pReply, SIGNAL(error(QNetworkReply::NetworkError)),this,SLOT(loadError(QNetworkReply::NetworkError)));
-
-    //file = new QFile("/home/wz/test1/hiv00000.mp4");
-    //file->open(QIODevice::ReadOnly);
-   // byte_file = file->readAll();
-
-   // m_pUrl.setScheme("ftp");
-   // setHostPort("192.168.1.30", 21);
-   // m_pUrl.setPath("/c.mp4");
-
-    //QUrl *url = new QUrl("ftp://192.168.1.30/a.txt");
-    //QUrl url("ftp://192.168.1.30/a.txt");
-   // url.setPort(21);
-    //url.setUserName("wz");
-    //url.setPassword("123456");
-    //setHostPort("ftp://192.168.1.30/", 21);
-
-    //QNetworkRequest request(url);
-    //QNetworkAccessManager *accessManager1 = new QNetworkAccessManager(this);
-
-    //accessManager1->setNetworkAccessible(QNetworkAccessManager::Accessible);
-
-   // pReply = accessManager1->put(QNetworkRequest(m_pUrl), byte_file);
-
-   // connect(pReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(loadError(QNetworkReply::NetworkError)));
-   // connect(accessManager1, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
-
-    //connect(reply, SIGNAL(uploadProgress(qint64 ,qint64)), this, SLOT(loadProgress(qint64 ,qint64)));
-
-    file = new QFile("/home/wz/test2/hiv00000.mp4");
+    file = new QFile("/home/wz/test1/hiv00000.mp4");
     file->open(QIODevice::ReadOnly);
-    QByteArray byte_file = file->readAll();
-    QNetworkAccessManager *accessManager1 = new QNetworkAccessManager(this);
+    byte_file = file->readAll();
+    accessManager1 = new QNetworkAccessManager(this);
     accessManager1->setNetworkAccessible(QNetworkAccessManager::Accessible);
-    QUrl url("ftp://192.168.1.30/x.mp4");
-    url.setPort(21);
-    //url.setUserName("wz");
-    //url.setPassword("123456");
-    QNetworkRequest request(url);
+
+    m_pUrl.setPath("/c.mp4");
+
+    QNetworkRequest request(m_pUrl);
+
     pReply = accessManager1->put(request, byte_file);
 
     connect(accessManager1,SIGNAL(finished(QNetworkReply*)),this,SLOT(replyFinished(QNetworkReply*)));
     connect(pReply, SIGNAL(error(QNetworkReply::NetworkError)),this,SLOT(loadError(QNetworkReply::NetworkError)));
-    //connect(pReply, SIGNAL(uploadProgress(qint64 ,qint64)), this, SLOT(loadProgress(qint64 ,qint64)));
-
-
-
-
-
-
-
 }
 
 void FtpManager::loadError(QNetworkReply::NetworkError) //传输中的错误输出
@@ -348,44 +268,6 @@ void FtpManager::loadError(QNetworkReply::NetworkError) //传输中的错误输�
     qDebug() <<"Error: " << pReply->error();
     qDebug() << "load error: " << QThread::currentThread();
 }
-
-#if 0
-// 下载文件
-void FtpManager::get(const QString &path, const QString &fileName)
-{
-    QFileInfo info;
-    info.setFile(fileName);
-    m_file.setFileName(fileName);
-    m_file.open(QIODevice::WriteOnly | QIODevice::Append);
-    m_pUrl.setPath(path);
-    QNetworkReply *pReply = accessManager->get(QNetworkRequest(m_pUrl));
-    //connect(pReply, SIGNAL(finished()), this, SLOT(finished()));
-    connect(accessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
-    connect(pReply, SIGNAL(downloadProgress(qint64, qint64)), this, SIGNAL(downloadProgress(qint64, qint64)));
-    connect(pReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SIGNAL(error(QNetworkReply::NetworkError)));
-}
-#endif
-#if 0
-// 下载过程中写文件
-void FtpManager::finished()
-{
-    QNetworkReply *pReply = qobject_cast<QNetworkReply *>(sender());
-    switch (pReply->error())
-    {
-    case QNetworkReply::NoError : {
-        m_file.write(pReply->readAll());
-        m_file.flush();
-    }
-        break;
-
-    default:
-        break;
-    }
-
-    m_file.close();
-    pReply->deleteLater();
-}
-#endif
 
 void FtpManager::replyFinished(QNetworkReply*) //删除指针，更新和关闭文件
 {
@@ -397,6 +279,9 @@ void FtpManager::replyFinished(QNetworkReply*) //删除指针，更新和关闭�
         file->flush();
         file->close();
         file->deleteLater();
+        accessManager1->deleteLater();
+        qDebug() << "finished";
+        ftp_mutex.unlock();
     }
     else
     {
