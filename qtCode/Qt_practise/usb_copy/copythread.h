@@ -2,7 +2,7 @@
 #define COPYTHREAD_H
 
 #include <QThread>
-#include <usb_copy.h>
+#include "usb_copy.h"
 #include "mainwindow.h"
 
 class MainWindow;

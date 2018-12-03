@@ -9,13 +9,20 @@
 #include "usb_copy.h"
 #include "searchthread.h"
 #include "ftpthread.h"
+#include "ftp_traversing.h"
 #include <QNetworkReply>
 
 #define USB_MAX_NUM 16
 
-extern QSemaphore CopyThreadNum;
-extern bool ftpFlag;
-extern QMutex mutex;
+extern QSemaphore CopyThreadNum;  /*当FTP线程获取到16个CopyThreadNum信号量，才可以进行传输，表示当前没有复制线程*/
+extern bool ftpFlag;     /*ftpFlag 用来判断是否可以发送信号启动FTP线程*/
+extern QMutex mutex;  /*互斥信号mutex用来对全局变量ftpFlag变量进行互斥操作*/
+extern QMutex ftp_mutex; /*互斥信号ftp_mutex用来对FTP遍历线程和FTP传输线程进行互斥，只有传输完一个文件才能传输下一个文件*/
+extern char path_from_full[MAX_PATH_LENGTH];/*标识FTP传输文件目录*/
+
+extern sum_t ftp_sum;
+extern copied_t ftp_transmission;
+extern time_t ftp_transmission_start_time;
 
 typedef struct
 {
@@ -32,7 +39,6 @@ typedef struct
     bool clearFlag;
 
 }usb_t;
-
 
 typedef struct
 {
@@ -70,12 +76,14 @@ private:
     usb_t usb[USB_MAX_NUM];
     SearchThread *searchThread;
 
-    QThread *ftpThread;
+    QThread *ftpThread;/*ftp传输数据线程*/
     FtpManager *ftpWork;
+    QThread *ftpTraverThread;/*ftp遍历目录线程*/
+    FtpTraversing *ftpTraver;
 
     QProgressBar *ftpProgressBar;
-    QTimer *timer;
-    QTimer *timer_ftp;
+    QTimer *timer;/*timer定时器用来显示本地存储多界面，超时更新*/
+    QTimer *timer_ftp;/*timer_ftp定时器用来倒计时，时间到了之后群启动FTP遍历线程*/
 
 private:
     Ui::MainWindow *ui;
@@ -83,13 +91,15 @@ private:
 signals:
     void starFtpTransmission();
 private slots:
-    void slotShow(int, unsigned long, unsigned long, unsigned long);
-    void slotProgress(int, sum_t, copied_t, time_t);
-    void slotCloseDev(int num);
-    void slotFindDev(char *mountPoint);
-    void showLocalStorage();
-    void emitToFtpTranslation();
-    void starFtpTime();
+    void slotShow(int, unsigned long, unsigned long, unsigned long);/*绘画饼状图*/
+    void slotProgress(int, sum_t, copied_t, time_t);/*复制进度*/
+    void slotCloseDev(int num);/*拔出一个USB设备*/
+    void slotFindDev(char *mountPoint);/*插入一个USB设备*/
+    void showLocalStorage();/*显示本地存储界面*/
+    void emitToFtpTranslation();/*定时时间到，开启FTP遍历线程*/
+    void starFtpTime();/*开启定时器，进行启动FTP遍历线程倒计时*/
+    void updateFtpProgress(QString, sum_t, copied_t, time_t); /*更新FTP进度条以及文本框信息*/
+
 };
 
 #endif // MAINWINDOW_H

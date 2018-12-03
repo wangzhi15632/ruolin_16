@@ -37,9 +37,6 @@ typedef struct copied
     long long size;
 }copied_t;
 
-typedef int (*each_opp_t)(const char*, const char*, const char*, const struct stat* st, CopyThread* copy);
-typedef void (*sig_handler_t)(int);
-
 #ifdef __cplusplus
 extern "C" {
 #endif

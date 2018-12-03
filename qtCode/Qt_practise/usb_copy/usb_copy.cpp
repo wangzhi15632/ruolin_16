@@ -323,7 +323,7 @@ int CopyThread::action(const char* path_from, const char* path_to, const char* p
     char buf[COPY_BUF_SIZE];  
     FILE *src_file, *dest_file;   
     struct stat st_dest;  
-      
+
     make_path(path_from_full, path_from, path_tree);
     make_path(path_to_full, path_to, path_tree);
 

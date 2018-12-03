@@ -8,10 +8,15 @@
 #include <sys/statfs.h>
 #include <QSemaphore>
 #include <QThread>
+#include "ftp_traversing.h"
 
 QSemaphore CopyThreadNum(USB_MAX_NUM);
 bool ftpFlag = true;
-QMutex mutex;
+QMutex mutex, ftp_mutex;
+char path_from_full[MAX_PATH_LENGTH];
+sum_t ftp_sum;
+copied_t ftp_transmission;
+time_t ftp_transmission_start_time;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -32,13 +37,16 @@ void MainWindow::slotFindDev(char *mountPoint)
 
     if(timer_ftp->isActive())
     {
+        qDebug() << "stop timer_ftp";
         timer_ftp->stop();
     }
 
     CopyThread *copyThread = new CopyThread();//can't add this parameter
 
-    connect(copyThread, SIGNAL(sendUDevInfo(int, unsigned long, unsigned long, unsigned long)), this, SLOT(slotShow(int, unsigned long, unsigned long, unsigned long)));
-    connect(copyThread, SIGNAL(sendToUI(int, sum_t, copied_t, time_t, bool)), this, SLOT(slotProgress(int, sum_t, copied_t, time_t)));
+    connect(copyThread, SIGNAL(sendUDevInfo(int, unsigned long, unsigned long, unsigned long)), this,
+            SLOT(slotShow(int, unsigned long, unsigned long, unsigned long)));
+    connect(copyThread, SIGNAL(sendToUI(int, sum_t, copied_t, time_t, bool)), this,
+            SLOT(slotProgress(int, sum_t, copied_t, time_t)));
     connect(copyThread, SIGNAL(finished()), copyThread, SLOT(deleteLater()));
     connect(copyThread, SIGNAL(finished()), copyThread, SLOT(test()));
 
@@ -178,6 +186,40 @@ void MainWindow::slotProgress(int i, sum_t sum, copied_t copied, time_t copy_sta
 
 }
 
+void MainWindow::updateFtpProgress(QString str, sum_t ftp_sum, copied_t ftp_transmissioned, time_t ftp_star_time)
+{
+    time_t cur_time;
+    char hs[20];
+    long long sp = 0;
+    char speed[20];
+    int percent;
+
+    ui->textEdit->append(str);
+
+    time(&cur_time);
+    if(ftp_sum.size == 0)
+    {
+        percent = 0;
+    }
+    else
+    {
+        percent = static_cast<int>((ftp_transmissioned.size * 1.0 / ftp_sum.size) * 100);
+    }
+
+    if(cur_time > ftp_star_time)
+    {
+        sp = ftp_transmissioned.size / (cur_time - ftp_star_time);
+        sprintf(speed, "%s/s", human_size(sp, hs));
+    }
+    else
+    {
+        sprintf(speed, "-");
+    }
+
+    //usb[i].label6->setText(speed);
+    ui->progressBar->setValue(percent);
+}
+
 void MainWindow::init()
 {
     qDebug() << "main thread: " << QThread::currentThread();
@@ -216,16 +258,27 @@ void MainWindow::init()
 
     searchThread->start();
 
-    /*创建FTP线程*/
+    /*创建FTP传输线程*/
     ftpThread = new QThread(this);
     ftpWork = new FtpManager();
 
     connect(ftpThread, SIGNAL(finished()), ftpThread, SLOT(deleteLater()));
-    connect(this, SIGNAL(starFtpTransmission()), ftpWork, SLOT(transmission_task()));
+    connect(ftpWork, SIGNAL(sendFtpInfo(QString, sum_t, copied_t, time_t)), this,
+            SLOT(updateFtpProgress(QString, sum_t, copied_t, time_t)));
 
     ftpWork->moveToThread(ftpThread);
-
     ftpThread->start();
+
+    /*创建FTP遍历线程*/
+    ftpTraverThread = new QThread(this);
+    ftpTraver = new FtpTraversing();
+
+    connect(ftpTraverThread, SIGNAL(finished()), ftpTraverThread, SLOT(deleteLater()));
+    connect(this, SIGNAL(starFtpTransmission()), ftpTraver, SLOT(transmission_task()));
+    connect(ftpTraver, SIGNAL(starFtpPut(char *, const QString, long long)), ftpWork, SLOT(put(char *, const QString, long long)));
+    ftpTraver->moveToThread(ftpTraverThread);
+
+    ftpTraverThread->start();
 }
 
 void MainWindow::initTimer()

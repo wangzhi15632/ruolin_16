@@ -7,23 +7,8 @@
 #include <QNetworkAccessManager>
 #include <QThread>
 #include <QMutex>
-
-#define FTP_REACQURE 1
-#define FTP_UPLOAD  2
-
-typedef struct ftpSum
-{
-    int file;
-    int dir;
-    long long size;
-}ftpSum_t;
-
-typedef struct ftpTransmission
-{
-    int file;
-    int dir;
-    long long size;
-}ftpTransmission_t;
+#include <QTimer>
+#include "usb_copy.h"
 
 class FtpManager: public QObject
 {
@@ -35,45 +20,26 @@ public:
     void setHostPort(const QString &host, int port = 21);
     // 设置登录 FTP 服务器的用户名和密码
     void setUserInfo(const QString &userName, const QString &password);
-    // 上传文件
-    void put(const QString &fileName, const QString &path);
-
-    //遍历汇总
-    int walk_sum(const char* path_from, const char* path_tree);
-    int sum_up(const char* path_tree, const struct stat* st);
-    //遍历传输
-    int walk_transmisson(const char* path_from, const char* path_tree);
-    int transmission_action(const char* path_from, const char* path_tree, const struct stat* st);
-
-    char* make_path(char *dest, const char *frt, const char *snd);
 
 signals:
     void error(QNetworkReply::NetworkError);
-    // 上传进度
-    void uploadProgress(qint64 bytesSent, qint64 bytesTotal);
+    void sendFtpInfo(QString, sum_t, copied_t, time_t);
 
 private slots:
     // 下载过程中写文件
     void replyFinished(QNetworkReply*);
     void loadError(QNetworkReply::NetworkError);
-    //启动传输任务
-    void transmission_task();
-
+    // 上传文件
+    void put(char *, const QString &, long long);
+    void ftpErrorTimeout();
 private:
     QFile *file;
     QUrl m_pUrl;
     QByteArray byte_file;
     QNetworkReply *pReply;
-    QNetworkAccessManager *accessManager1;
-
-    ftpSum_t sum;
-    ftpTransmission_t transmission;
-    time_t transmission_start_time;
-    QString ftpDir;
-    QString host;
-
-    QMutex ftp_mutex;
-
+    QNetworkAccessManager *accessManager;
+    QTimer *ftpTimeOut_timer;
+    long long size;
 };
 
 #endif // FTPTHREAD_H

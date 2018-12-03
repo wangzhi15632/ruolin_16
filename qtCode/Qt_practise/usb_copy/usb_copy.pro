@@ -32,7 +32,8 @@ SOURCES += \
     searchthread.cpp \
     copythread.cpp \
     generatelogfile.cpp \
-    ftpthread.cpp
+    ftpthread.cpp \
+    ftp_traversing.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -41,7 +42,8 @@ HEADERS += \
     usb_main.h \
     searchthread.h \
     copythread.h \
-    ftpthread.h
+    ftpthread.h \
+    ftp_traversing.h
 
 FORMS += \
         mainwindow.ui
