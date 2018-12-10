@@ -8,8 +8,8 @@ class SearchThread : public QThread
 {
     Q_OBJECT
 public:
-    SearchThread(QObject *parent);
-
+    explicit SearchThread(QObject *parent);
+    ~SearchThread();
 protected:
     void run();
 

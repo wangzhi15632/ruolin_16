@@ -2,6 +2,7 @@
 #define FTPCONFIG_H
 
 #include <QDialog>
+#include <QMessageBox>
 
 namespace Ui {
 class FtpConfig;
@@ -14,6 +15,12 @@ class FtpConfig : public QDialog
 public:
     explicit FtpConfig(QWidget *parent = 0);
     ~FtpConfig();
+
+public:
+    QString getIPAddr();
+    QString getPortAddr();
+    QString getUserName();
+    QString getPassword();
 
 private:
     Ui::FtpConfig *ui;

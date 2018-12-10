@@ -37,7 +37,7 @@ void FtpManager::put(char *fileName, const QString &path, long long file_size)
     emit sendFtpInfo(temp, ftp_sum, ftp_transmission, ftp_transmission_start_time);
     file = new QFile(fileName);
     file->open(QIODevice::ReadOnly);
-    byte_file = file->readAll();
+   // byte_file = file->readAll();
     accessManager = new QNetworkAccessManager(this);
     accessManager->setNetworkAccessible(QNetworkAccessManager::Accessible);
 
@@ -45,7 +45,7 @@ void FtpManager::put(char *fileName, const QString &path, long long file_size)
     m_pUrl.setPath(file_name);
     QNetworkRequest request(m_pUrl);
 
-    pReply = accessManager->put(request, byte_file);
+    pReply = accessManager->put(request, file);
 
     connect(accessManager,SIGNAL(finished(QNetworkReply*)),this,SLOT(replyFinished(QNetworkReply*)));
     connect(pReply, SIGNAL(error(QNetworkReply::NetworkError)),this,SLOT(loadError(QNetworkReply::NetworkError)));

@@ -13,6 +13,7 @@ void CopyThread::test()
 {
     qDebug("end!!!! num:%d", this->num);
     qDebug() << "copy thread" << currentThread();
+    qDebug() << "this:"<< this;
 }
 
 void CopyThread::cp_dir(char *mountPoint)

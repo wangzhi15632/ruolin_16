@@ -315,7 +315,7 @@ int CopyThread::walk_copy(const char* path_from, const char* path_to, const char
 }
 /* 操作 */  
 int CopyThread::action(const char* path_from, const char* path_to, const char* path_tree, const struct stat* st)
-{  
+{
     int ret_val = OPP_CONTINUE;  
     char path_from_full[MAX_PATH_LENGTH];  
     char path_to_full[MAX_PATH_LENGTH];  
@@ -417,9 +417,8 @@ int CopyThread::action(const char* path_from, const char* path_to, const char* p
         ret_val = OPP_SKIP;  
         qWarning("skip, \"%s\" is not a file nor directory.\n", path_to_full);
     }  
-  
-    return ret_val;  
-}  
+    return ret_val;
+}
   
 /*禁止循环复制，即目标文件/文件夹不能包含在源文件/文件夹中*/  
 bool CopyThread::is_self_copy(const char* src, const char* dest)
@@ -447,31 +446,46 @@ int CopyThread::cp_task(char *dir)
     struct stat st_src, st_dest;  
     char path_to_fixed[MAX_PATH_LENGTH];  
     char *path_from = nullptr, *path_to = nullptr, *file_name = nullptr;
- 
     /* 第一次遍历：统计 */  
     sum.file = 0;  
     sum.dir = 0;  
     sum.size = 0;  
-
-    if((num >= 0) && (num <= 15))
+#if 1
+    if((num >= 0) && (num <= 1))
     {
-        path_to = "/home/wz/test1";
+        path_to = path[0];
     }
-#if 0
-    else if((num >= 4) && (num <= 7))
+    else if((num >= 2) && (num <= 3))
     {
-        path_to = "/home/wz/test2";
+        path_to = path[1];
     }
-    else if((num >= 8) && (num <= 11))
+    else if((num >= 4) && (num <= 5))
     {
-        path_to = "/home/wz/test3";
+        path_to = path[2];
     }
-    else if((num >= 12) && (num <= 15))
+    else if((num >= 6) && (num <= 7))
     {
-        path_to = "/home/wz/test4";
+        path_to = path[3];
+    }
+    else if((num >= 8) && (num <= 9))
+    {
+        path_to = path[4];
+    }
+    else if((num >= 10) && (num <= 11))
+    {
+        path_to = path[5];
+    }
+    else if((num >= 12) && (num <= 13))
+    {
+        path_to = path[6];
+    }
+    else if((num >= 14) && (num <= 15))
+    {
+        path_to = path[7];
     }
 #endif
-    path_from = dir;  
+   // path_to = "/usb_copy_dir";
+    path_from = dir;
 
     walk_sum(path_from, path_to, nullptr);
       

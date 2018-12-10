@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_MainWindow_t {
-    QByteArrayData data[17];
-    char stringdata0[190];
+    QByteArrayData data[19];
+    char stringdata0[212];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -47,7 +47,9 @@ QT_MOC_LITERAL(12, 111, 10), // "mountPoint"
 QT_MOC_LITERAL(13, 122, 16), // "showLocalStorage"
 QT_MOC_LITERAL(14, 139, 20), // "emitToFtpTranslation"
 QT_MOC_LITERAL(15, 160, 11), // "starFtpTime"
-QT_MOC_LITERAL(16, 172, 17) // "updateFtpProgress"
+QT_MOC_LITERAL(16, 172, 17), // "updateFtpProgress"
+QT_MOC_LITERAL(17, 190, 16), // "ftpCfgBtnClicked"
+QT_MOC_LITERAL(18, 207, 4) // "test"
 
     },
     "MainWindow\0starFtpTransmission\0\0"
@@ -55,7 +57,8 @@ QT_MOC_LITERAL(16, 172, 17) // "updateFtpProgress"
     "time_t\0slotCloseDev\0num\0slotFindDev\0"
     "char*\0mountPoint\0showLocalStorage\0"
     "emitToFtpTranslation\0starFtpTime\0"
-    "updateFtpProgress"
+    "updateFtpProgress\0ftpCfgBtnClicked\0"
+    "test"
 };
 #undef QT_MOC_LITERAL
 
@@ -65,7 +68,7 @@ static const uint qt_meta_data_MainWindow[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-       9,   14, // methods
+      11,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -73,17 +76,19 @@ static const uint qt_meta_data_MainWindow[] = {
        1,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    0,   59,    2, 0x06 /* Public */,
+       1,    0,   69,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       3,    4,   60,    2, 0x08 /* Private */,
-       4,    4,   69,    2, 0x08 /* Private */,
-       8,    1,   78,    2, 0x08 /* Private */,
-      10,    1,   81,    2, 0x08 /* Private */,
-      13,    0,   84,    2, 0x08 /* Private */,
-      14,    0,   85,    2, 0x08 /* Private */,
-      15,    0,   86,    2, 0x08 /* Private */,
-      16,    4,   87,    2, 0x08 /* Private */,
+       3,    4,   70,    2, 0x08 /* Private */,
+       4,    4,   79,    2, 0x08 /* Private */,
+       8,    1,   88,    2, 0x08 /* Private */,
+      10,    1,   91,    2, 0x08 /* Private */,
+      13,    0,   94,    2, 0x08 /* Private */,
+      14,    0,   95,    2, 0x08 /* Private */,
+      15,    0,   96,    2, 0x08 /* Private */,
+      16,    4,   97,    2, 0x08 /* Private */,
+      17,    0,  106,    2, 0x08 /* Private */,
+      18,    0,  107,    2, 0x08 /* Private */,
 
  // signals: parameters
     QMetaType::Void,
@@ -97,6 +102,8 @@ static const uint qt_meta_data_MainWindow[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void, QMetaType::QString, 0x80000000 | 5, 0x80000000 | 6, 0x80000000 | 7,    2,    2,    2,    2,
+    QMetaType::Void,
+    QMetaType::Void,
 
        0        // eod
 };
@@ -116,6 +123,8 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 6: _t->emitToFtpTranslation(); break;
         case 7: _t->starFtpTime(); break;
         case 8: _t->updateFtpProgress((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< sum_t(*)>(_a[2])),(*reinterpret_cast< copied_t(*)>(_a[3])),(*reinterpret_cast< time_t(*)>(_a[4]))); break;
+        case 9: _t->ftpCfgBtnClicked(); break;
+        case 10: _t->test(); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -156,13 +165,13 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 9)
+        if (_id < 11)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 9;
+        _id -= 11;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 9)
+        if (_id < 11)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 9;
+        _id -= 11;
     }
     return _id;
 }

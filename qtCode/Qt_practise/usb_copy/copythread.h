@@ -12,7 +12,8 @@ class CopyThread : public QThread
     Q_OBJECT
 
 public:
-    CopyThread();
+    explicit CopyThread();
+
     void cp_dir(char *);
 
 protected:

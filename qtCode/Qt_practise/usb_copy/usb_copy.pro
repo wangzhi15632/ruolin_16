@@ -33,7 +33,8 @@ SOURCES += \
     copythread.cpp \
     generatelogfile.cpp \
     ftpthread.cpp \
-    ftp_traversing.cpp
+    ftp_traversing.cpp \
+    ftpconfig.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -43,10 +44,12 @@ HEADERS += \
     searchthread.h \
     copythread.h \
     ftpthread.h \
-    ftp_traversing.h
+    ftp_traversing.h \
+    ftpconfig.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    ftpconfig.ui
 
 LIBS += -lpthread
 

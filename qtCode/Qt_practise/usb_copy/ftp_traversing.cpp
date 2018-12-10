@@ -246,11 +246,15 @@ void FtpTraversing::transmission_task()
 
     char *path_from = nullptr;
 
-    path_from = "/home/wz/test1";
+    path_from = "/usb_copy_dir";
 
     memset(&ftp_sum, 0, sizeof(ftp_sum));
     //添加for循环
-    walk_sum(path_from, nullptr);
+    //for(int i = 0; i < 8; i++)
+    //{
+   //     path_from = path[i];
+        walk_sum(path_from, nullptr);
+   // }
 
     if(ftp_sum.file == 0 && ftp_sum.dir == 0)
     {
@@ -263,6 +267,11 @@ void FtpTraversing::transmission_task()
         //记录开始传输时间
         time(&ftp_transmission_start_time);
         //添加for循环
-        walk_transmisson(path_from, nullptr);
+      //  for(int i = 0; i < 8; i++)
+      //  {
+            //path_from = path[i];
+            path_from = "/usb_copy_dir";
+            walk_transmisson(path_from, nullptr);
+       // }
     }
 }

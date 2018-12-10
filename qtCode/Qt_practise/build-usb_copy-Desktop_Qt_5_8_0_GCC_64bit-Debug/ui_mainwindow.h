@@ -16,9 +16,12 @@
 #include <QtWidgets/QGroupBox>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QHeaderView>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QProgressBar>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QTextEdit>
 #include <QtWidgets/QToolBar>
@@ -58,9 +61,14 @@ public:
     QVBoxLayout *verticalLayout_2;
     QGroupBox *groupBox_17;
     QGroupBox *groupBox_18;
-    QVBoxLayout *verticalLayout_4;
     QVBoxLayout *verticalLayout_3;
     QProgressBar *progressBar;
+    QHBoxLayout *horizontalLayout_7;
+    QLabel *label;
+    QLabel *label_2;
+    QSpacerItem *horizontalSpacer_2;
+    QPushButton *pushButton_ftpCfg;
+    QSpacerItem *horizontalSpacer;
     QTextEdit *textEdit;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
@@ -204,12 +212,9 @@ public:
 
         groupBox_18 = new QGroupBox(widget);
         groupBox_18->setObjectName(QStringLiteral("groupBox_18"));
-        verticalLayout_4 = new QVBoxLayout(groupBox_18);
-        verticalLayout_4->setSpacing(6);
-        verticalLayout_4->setContentsMargins(11, 11, 11, 11);
-        verticalLayout_4->setObjectName(QStringLiteral("verticalLayout_4"));
-        verticalLayout_3 = new QVBoxLayout();
+        verticalLayout_3 = new QVBoxLayout(groupBox_18);
         verticalLayout_3->setSpacing(6);
+        verticalLayout_3->setContentsMargins(11, 11, 11, 11);
         verticalLayout_3->setObjectName(QStringLiteral("verticalLayout_3"));
         progressBar = new QProgressBar(groupBox_18);
         progressBar->setObjectName(QStringLiteral("progressBar"));
@@ -217,13 +222,39 @@ public:
 
         verticalLayout_3->addWidget(progressBar);
 
+        horizontalLayout_7 = new QHBoxLayout();
+        horizontalLayout_7->setSpacing(6);
+        horizontalLayout_7->setObjectName(QStringLiteral("horizontalLayout_7"));
+        label = new QLabel(groupBox_18);
+        label->setObjectName(QStringLiteral("label"));
+
+        horizontalLayout_7->addWidget(label);
+
+        label_2 = new QLabel(groupBox_18);
+        label_2->setObjectName(QStringLiteral("label_2"));
+
+        horizontalLayout_7->addWidget(label_2);
+
+        horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout_7->addItem(horizontalSpacer_2);
+
+        pushButton_ftpCfg = new QPushButton(groupBox_18);
+        pushButton_ftpCfg->setObjectName(QStringLiteral("pushButton_ftpCfg"));
+
+        horizontalLayout_7->addWidget(pushButton_ftpCfg);
+
+        horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout_7->addItem(horizontalSpacer);
+
+
+        verticalLayout_3->addLayout(horizontalLayout_7);
+
         textEdit = new QTextEdit(groupBox_18);
         textEdit->setObjectName(QStringLiteral("textEdit"));
 
         verticalLayout_3->addWidget(textEdit);
-
-
-        verticalLayout_4->addLayout(verticalLayout_3);
 
 
         verticalLayout_2->addWidget(groupBox_18);
@@ -277,6 +308,9 @@ public:
         groupBox_16->setTitle(QApplication::translate("MainWindow", "USB-16", Q_NULLPTR));
         groupBox_17->setTitle(QApplication::translate("MainWindow", "\346\234\254\345\234\260\345\255\230\345\202\250", Q_NULLPTR));
         groupBox_18->setTitle(QApplication::translate("MainWindow", "FTP", Q_NULLPTR));
+        label->setText(QApplication::translate("MainWindow", "\351\200\237\345\272\246:", Q_NULLPTR));
+        label_2->setText(QString());
+        pushButton_ftpCfg->setText(QApplication::translate("MainWindow", "FTP\350\256\276\347\275\256", Q_NULLPTR));
         toolBar->setWindowTitle(QApplication::translate("MainWindow", "toolBar", Q_NULLPTR));
     } // retranslateUi
 

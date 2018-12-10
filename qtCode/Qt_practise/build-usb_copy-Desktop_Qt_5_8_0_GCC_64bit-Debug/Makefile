@@ -56,11 +56,13 @@ SOURCES       = ../usb_copy/main.cpp \
 		../usb_copy/copythread.cpp \
 		../usb_copy/generatelogfile.cpp \
 		../usb_copy/ftpthread.cpp \
-		../usb_copy/ftp_traversing.cpp moc_mainwindow.cpp \
+		../usb_copy/ftp_traversing.cpp \
+		../usb_copy/ftpconfig.cpp moc_mainwindow.cpp \
 		moc_searchthread.cpp \
 		moc_copythread.cpp \
 		moc_ftpthread.cpp \
-		moc_ftp_traversing.cpp
+		moc_ftp_traversing.cpp \
+		moc_ftpconfig.cpp
 OBJECTS       = main.o \
 		mainwindow.o \
 		usb_main.o \
@@ -70,11 +72,13 @@ OBJECTS       = main.o \
 		generatelogfile.o \
 		ftpthread.o \
 		ftp_traversing.o \
+		ftpconfig.o \
 		moc_mainwindow.o \
 		moc_searchthread.o \
 		moc_copythread.o \
 		moc_ftpthread.o \
-		moc_ftp_traversing.o
+		moc_ftp_traversing.o \
+		moc_ftpconfig.o
 DIST          = ../../../../Qt5.8.0/5.8/gcc_64/mkspecs/features/spec_pre.prf \
 		../../../../Qt5.8.0/5.8/gcc_64/mkspecs/common/unix.conf \
 		../../../../Qt5.8.0/5.8/gcc_64/mkspecs/common/linux.conf \
@@ -252,7 +256,8 @@ DIST          = ../../../../Qt5.8.0/5.8/gcc_64/mkspecs/features/spec_pre.prf \
 		../usb_copy/searchthread.h \
 		../usb_copy/copythread.h \
 		../usb_copy/ftpthread.h \
-		../usb_copy/ftp_traversing.h ../usb_copy/main.cpp \
+		../usb_copy/ftp_traversing.h \
+		../usb_copy/ftpconfig.h ../usb_copy/main.cpp \
 		../usb_copy/mainwindow.cpp \
 		../usb_copy/usb_main.cpp \
 		../usb_copy/usb_copy.cpp \
@@ -260,7 +265,8 @@ DIST          = ../../../../Qt5.8.0/5.8/gcc_64/mkspecs/features/spec_pre.prf \
 		../usb_copy/copythread.cpp \
 		../usb_copy/generatelogfile.cpp \
 		../usb_copy/ftpthread.cpp \
-		../usb_copy/ftp_traversing.cpp
+		../usb_copy/ftp_traversing.cpp \
+		../usb_copy/ftpconfig.cpp
 QMAKE_TARGET  = usb_copy
 DESTDIR       = 
 TARGET        = usb_copy
@@ -269,7 +275,7 @@ TARGET        = usb_copy
 first: all
 ####### Build rules
 
-$(TARGET): ui_mainwindow.h $(OBJECTS)  
+$(TARGET): ui_mainwindow.h ui_ftpconfig.h $(OBJECTS)  
 	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)
 
 Makefile: ../usb_copy/usb_copy.pro ../../../../Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++/qmake.conf ../../../../Qt5.8.0/5.8/gcc_64/mkspecs/features/spec_pre.prf \
@@ -640,9 +646,9 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents ../../../../Qt5.8.0/5.8/gcc_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ../usb_copy/mainwindow.h ../usb_copy/config.h ../usb_copy/usb_copy.h ../usb_copy/usb_main.h ../usb_copy/searchthread.h ../usb_copy/copythread.h ../usb_copy/ftpthread.h ../usb_copy/ftp_traversing.h $(DISTDIR)/
-	$(COPY_FILE) --parents ../usb_copy/main.cpp ../usb_copy/mainwindow.cpp ../usb_copy/usb_main.cpp ../usb_copy/usb_copy.cpp ../usb_copy/searchthread.cpp ../usb_copy/copythread.cpp ../usb_copy/generatelogfile.cpp ../usb_copy/ftpthread.cpp ../usb_copy/ftp_traversing.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ../usb_copy/mainwindow.ui $(DISTDIR)/
+	$(COPY_FILE) --parents ../usb_copy/mainwindow.h ../usb_copy/config.h ../usb_copy/usb_copy.h ../usb_copy/usb_main.h ../usb_copy/searchthread.h ../usb_copy/copythread.h ../usb_copy/ftpthread.h ../usb_copy/ftp_traversing.h ../usb_copy/ftpconfig.h $(DISTDIR)/
+	$(COPY_FILE) --parents ../usb_copy/main.cpp ../usb_copy/mainwindow.cpp ../usb_copy/usb_main.cpp ../usb_copy/usb_copy.cpp ../usb_copy/searchthread.cpp ../usb_copy/copythread.cpp ../usb_copy/generatelogfile.cpp ../usb_copy/ftpthread.cpp ../usb_copy/ftp_traversing.cpp ../usb_copy/ftpconfig.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../usb_copy/mainwindow.ui ../usb_copy/ftpconfig.ui $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -674,9 +680,9 @@ compiler_moc_predefs_clean:
 moc_predefs.h: ../../../../Qt5.8.0/5.8/gcc_64/mkspecs/features/data/dummy.cpp
 	g++ -pipe -g -std=gnu++11 -Wall -W -dM -E -o moc_predefs.h ../../../../Qt5.8.0/5.8/gcc_64/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: moc_mainwindow.cpp moc_searchthread.cpp moc_copythread.cpp moc_ftpthread.cpp moc_ftp_traversing.cpp
+compiler_moc_header_make_all: moc_mainwindow.cpp moc_searchthread.cpp moc_copythread.cpp moc_ftpthread.cpp moc_ftp_traversing.cpp moc_ftpconfig.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_mainwindow.cpp moc_searchthread.cpp moc_copythread.cpp moc_ftpthread.cpp moc_ftp_traversing.cpp
+	-$(DEL_FILE) moc_mainwindow.cpp moc_searchthread.cpp moc_copythread.cpp moc_ftpthread.cpp moc_ftp_traversing.cpp moc_ftpconfig.cpp
 moc_mainwindow.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QMainWindow \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/qmainwindow.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
@@ -1238,6 +1244,7 @@ moc_mainwindow.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QMainWindow
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslPreSharedKeyAuthenticator \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslpresharedkeyauthenticator.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QMutex \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QTimer \
 		../usb_copy/ftp_traversing.h \
 		../usb_copy/mainwindow.h \
 		moc_predefs.h \
@@ -1860,6 +1867,7 @@ moc_copythread.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QThread \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslPreSharedKeyAuthenticator \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslpresharedkeyauthenticator.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QMutex \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QTimer \
 		../usb_copy/ftp_traversing.h \
 		../usb_copy/copythread.h \
 		moc_predefs.h \
@@ -1963,6 +1971,10 @@ moc_ftpthread.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QUrl \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QThread \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qthread.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QMutex \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QTimer \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtimer.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qbasictimer.h \
+		../usb_copy/usb_copy.h \
 		../usb_copy/ftpthread.h \
 		moc_predefs.h \
 		../../../../Qt5.8.0/5.8/gcc_64/bin/moc
@@ -2023,14 +2035,127 @@ moc_ftp_traversing.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QString \
 		../../../../Qt5.8.0/5.8/gcc_64/bin/moc
 	/home/wz/Qt5.8.0/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/wz/Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++ -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/Qt5.8.0/5.8/gcc_64/include -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCharts -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtWidgets -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtGui -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtNetwork -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../usb_copy/ftp_traversing.h -o moc_ftp_traversing.cpp
 
+moc_ftpconfig.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QDialog \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/qdialog.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qtguiglobal.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qglobal.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qconfig-bootstrapped.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qconfig.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtcore-config.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qsystemdetection.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qprocessordetection.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qcompilerdetection.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtypeinfo.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qsysinfo.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qlogging.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qflags.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtypetraits.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qatomic.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qbasicatomic.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qatomic_bootstrap.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qgenericatomic.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qatomic_cxx11.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qatomic_msvc.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qglobalstatic.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qmutex.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qnumeric.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qversiontagging.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qtgui-config.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/qtwidgets-config.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/qwidget.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qwindowdefs.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qobjectdefs.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qnamespace.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qobjectdefs_impl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qwindowdefs_win.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qobject.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qstring.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qchar.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qbytearray.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qrefcount.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qarraydata.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qstringbuilder.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qlist.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qalgorithms.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qiterator.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qhashfunctions.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qpair.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qbytearraylist.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qstringlist.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qregexp.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qstringmatcher.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qcoreevent.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qscopedpointer.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qmetatype.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qvarlengtharray.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qcontainerfwd.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qobject_impl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qmargins.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qpaintdevice.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qrect.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qsize.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qpoint.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qpalette.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qcolor.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qrgb.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qrgba64.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qbrush.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qvector.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qmatrix.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qpolygon.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qregion.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qdatastream.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qiodevice.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qline.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qtransform.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qpainterpath.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qimage.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qpixelformat.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qpixmap.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qsharedpointer.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qshareddata.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qhash.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qsharedpointer_impl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qfont.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qfontmetrics.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qfontinfo.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/qsizepolicy.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qcursor.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qkeysequence.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qevent.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qvariant.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qmap.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qdebug.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtextstream.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qlocale.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qset.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qcontiguouscache.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qurl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qurlquery.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qfile.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qfiledevice.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qvector2d.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qtouchdevice.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QMessageBox \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/qmessagebox.h \
+		../usb_copy/ftpconfig.h \
+		moc_predefs.h \
+		../../../../Qt5.8.0/5.8/gcc_64/bin/moc
+	/home/wz/Qt5.8.0/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/wz/Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++ -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/Qt5.8.0/5.8/gcc_64/include -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCharts -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtWidgets -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtGui -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtNetwork -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../usb_copy/ftpconfig.h -o moc_ftpconfig.cpp
+
 compiler_moc_source_make_all:
 compiler_moc_source_clean:
-compiler_uic_make_all: ui_mainwindow.h
+compiler_uic_make_all: ui_mainwindow.h ui_ftpconfig.h
 compiler_uic_clean:
-	-$(DEL_FILE) ui_mainwindow.h
+	-$(DEL_FILE) ui_mainwindow.h ui_ftpconfig.h
 ui_mainwindow.h: ../usb_copy/mainwindow.ui \
 		../../../../Qt5.8.0/5.8/gcc_64/bin/uic
 	/home/wz/Qt5.8.0/5.8/gcc_64/bin/uic ../usb_copy/mainwindow.ui -o ui_mainwindow.h
+
+ui_ftpconfig.h: ../usb_copy/ftpconfig.ui \
+		../../../../Qt5.8.0/5.8/gcc_64/bin/uic
+	/home/wz/Qt5.8.0/5.8/gcc_64/bin/uic ../usb_copy/ftpconfig.ui -o ui_ftpconfig.h
 
 compiler_yacc_decl_make_all:
 compiler_yacc_decl_clean:
@@ -2604,6 +2729,7 @@ main.o: ../usb_copy/main.cpp ../usb_copy/mainwindow.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslPreSharedKeyAuthenticator \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslpresharedkeyauthenticator.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QMutex \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QTimer \
 		../usb_copy/ftp_traversing.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QApplication
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../usb_copy/main.cpp
@@ -3170,6 +3296,7 @@ mainwindow.o: ../usb_copy/mainwindow.cpp ../usb_copy/mainwindow.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslPreSharedKeyAuthenticator \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslpresharedkeyauthenticator.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QMutex \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QTimer \
 		../usb_copy/ftp_traversing.h \
 		ui_mainwindow.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QAction \
@@ -3178,8 +3305,11 @@ mainwindow.o: ../usb_copy/mainwindow.cpp ../usb_copy/mainwindow.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QGroupBox \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QHBoxLayout \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QHeaderView \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QLabel \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QMenuBar \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QProgressBar \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QPushButton \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QSpacerItem \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QStatusBar \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QTextEdit \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QToolBar \
@@ -3752,6 +3882,7 @@ usb_main.o: ../usb_copy/usb_main.cpp ../usb_copy/usb_copy.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslPreSharedKeyAuthenticator \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslpresharedkeyauthenticator.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QMutex \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QTimer \
 		../usb_copy/ftp_traversing.h \
 		../usb_copy/copythread.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o usb_main.o ../usb_copy/usb_main.cpp
@@ -4319,6 +4450,7 @@ usb_copy.o: ../usb_copy/usb_copy.cpp ../usb_copy/usb_copy.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslPreSharedKeyAuthenticator \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslpresharedkeyauthenticator.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QMutex \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QTimer \
 		../usb_copy/ftp_traversing.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o usb_copy.o ../usb_copy/usb_copy.cpp
 
@@ -4952,6 +5084,7 @@ copythread.o: ../usb_copy/copythread.cpp ../usb_copy/copythread.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslPreSharedKeyAuthenticator \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslpresharedkeyauthenticator.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QMutex \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QTimer \
 		../usb_copy/ftp_traversing.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o copythread.o ../usb_copy/copythread.cpp
 
@@ -5168,6 +5301,10 @@ ftpthread.o: ../usb_copy/ftpthread.cpp ../../../../Qt5.8.0/5.8/gcc_64/include/Qt
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QThread \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qthread.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QMutex \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QTimer \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtimer.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qbasictimer.h \
+		../usb_copy/usb_copy.h \
 		../usb_copy/mainwindow.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QMainWindow \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/qmainwindow.h \
@@ -5228,7 +5365,6 @@ ftpthread.o: ../usb_copy/ftpthread.cpp ../../../../Qt5.8.0/5.8/gcc_64/include/Qt
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qanimationgroup.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qarraydataops.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qarraydatapointer.h \
-		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qbasictimer.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qbitarray.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qbuffer.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qbytearraymatcher.h \
@@ -5314,7 +5450,6 @@ ftpthread.o: ../usb_copy/ftpthread.cpp ../../../../Qt5.8.0/5.8/gcc_64/include/Qt
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qthreadpool.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qthreadstorage.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtimeline.h \
-		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtimer.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtimezone.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtranslator.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/quuid.h \
@@ -5629,7 +5764,6 @@ ftpthread.o: ../usb_copy/ftpthread.cpp ../../../../Qt5.8.0/5.8/gcc_64/include/Qt
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCharts/qvxymodelmapper.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCharts/qxylegendmarker.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCharts/qtchartsversion.h \
-		../usb_copy/usb_copy.h \
 		../usb_copy/searchthread.h \
 		../usb_copy/ftp_traversing.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ftpthread.o ../usb_copy/ftpthread.cpp
@@ -6197,8 +6331,117 @@ ftp_traversing.o: ../usb_copy/ftp_traversing.cpp ../usb_copy/ftp_traversing.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QFlags \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/QSslPreSharedKeyAuthenticator \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork/qsslpresharedkeyauthenticator.h \
-		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QMutex
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QMutex \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QTimer
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ftp_traversing.o ../usb_copy/ftp_traversing.cpp
+
+ftpconfig.o: ../usb_copy/ftpconfig.cpp ../usb_copy/ftpconfig.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QDialog \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/qdialog.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qtguiglobal.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qglobal.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qconfig-bootstrapped.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qconfig.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtcore-config.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qsystemdetection.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qprocessordetection.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qcompilerdetection.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtypeinfo.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qsysinfo.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qlogging.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qflags.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtypetraits.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qatomic.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qbasicatomic.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qatomic_bootstrap.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qgenericatomic.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qatomic_cxx11.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qatomic_msvc.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qglobalstatic.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qmutex.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qnumeric.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qversiontagging.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qtgui-config.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/qtwidgets-config.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/qwidget.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qwindowdefs.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qobjectdefs.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qnamespace.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qobjectdefs_impl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qwindowdefs_win.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qobject.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qstring.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qchar.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qbytearray.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qrefcount.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qarraydata.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qstringbuilder.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qlist.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qalgorithms.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qiterator.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qhashfunctions.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qpair.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qbytearraylist.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qstringlist.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qregexp.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qstringmatcher.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qcoreevent.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qscopedpointer.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qmetatype.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qvarlengtharray.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qcontainerfwd.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qobject_impl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qmargins.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qpaintdevice.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qrect.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qsize.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qpoint.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qpalette.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qcolor.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qrgb.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qrgba64.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qbrush.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qvector.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qmatrix.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qpolygon.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qregion.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qdatastream.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qiodevice.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qline.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qtransform.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qpainterpath.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qimage.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qpixelformat.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qpixmap.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qsharedpointer.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qshareddata.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qhash.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qsharedpointer_impl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qfont.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qfontmetrics.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qfontinfo.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/qsizepolicy.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qcursor.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qkeysequence.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qevent.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qvariant.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qmap.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qdebug.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qtextstream.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qlocale.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qset.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qcontiguouscache.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qurl.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qurlquery.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qfile.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qfiledevice.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qvector2d.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtGui/qtouchdevice.h \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QMessageBox \
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/qmessagebox.h \
+		ui_ftpconfig.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ftpconfig.o ../usb_copy/ftpconfig.cpp
 
 moc_mainwindow.o: moc_mainwindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_mainwindow.o moc_mainwindow.cpp
@@ -6214,6 +6457,9 @@ moc_ftpthread.o: moc_ftpthread.cpp
 
 moc_ftp_traversing.o: moc_ftp_traversing.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_ftp_traversing.o moc_ftp_traversing.cpp
+
+moc_ftpconfig.o: moc_ftpconfig.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_ftpconfig.o moc_ftpconfig.cpp
 
 ####### Install
 

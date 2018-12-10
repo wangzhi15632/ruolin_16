@@ -1,10 +1,10 @@
-#include <stdio.h>  
-#include <stdlib.h>  
-#include <string.h> 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>  
+#include <fcntl.h>
 #include <dirent.h>
 #include <pthread.h>
 #include "usb_copy.h"
@@ -15,31 +15,29 @@
 
 void SearchThread::read_mount_point(void)
 {
-	FILE *fp;
-	size_t  len = 0;
-	ssize_t read;	
+    FILE *fp;
+    size_t  len = 0;
+    ssize_t read;
     char *line = nullptr;
-	
-	/*查看/media/mount_info 文件，确认新挂载的目录名*/
-	fp = fopen("/media/mount_info.txt", "r");
+
+    fp = fopen("/media/mount_info.txt", "r");
     if(fp == nullptr)
-	{
-		return;
-	}
-	else
+    {
+        return;
+    }
+    else
     {
         while((read = getline(&line, &len, fp)) != -1)
-		{
+        {
             memset(mountPoint, 0, 20);
             memcpy(mountPoint, line, read - 1);
 
             emit(sendMountNum(mountPoint));
-		}
-		
-		if(line)
-			free(line);
+        }
 
-		/*读完文件，删除*/
+        if(line)
+            free(line);
+
         if(remove("/media/mount_info.txt") != 0)
             qCritical("remove mount_info failed\n");
     }
@@ -54,7 +52,6 @@ void SearchThread::read_unmount_point(void)
     char *line = nullptr;
     char unmountPoint[20] = {0};
 
-    /*查看/media/unmount_info 文件，确认新挂载的目录名*/
     fp = fopen("/media/unmount_info.txt", "r");
     if(fp == nullptr)
     {
@@ -75,7 +72,6 @@ void SearchThread::read_unmount_point(void)
         if(line)
             free(line);
 
-        /*读完文件，删除*/
         if(remove("/media/unmount_info.txt") != 0)
             qCritical("remove unmount_info.txt failed\n");
     }
@@ -86,11 +82,9 @@ void SearchThread::check_ftp_transmission(void)
     if(ftpFlag == false)
         return;
 
-    /*获取到最大资源证明现在没有拷贝线程*/
     if(CopyThreadNum.tryAcquire(USB_MAX_NUM) == true)
     {
         emit starCountingDown();
-        /*开启倒计时后释放资源*/
         CopyThreadNum.release(USB_MAX_NUM);
 
         mutex.lock();

@@ -3,18 +3,30 @@
 
 SearchThread::SearchThread(QObject *parent)
 {
+    qDebug() << "searchThread";
+}
+
+SearchThread::~SearchThread()
+{
+    requestInterruption();
+    quit();
+    wait();
+
+    qDebug() << "delete searchThread";
 }
 
 void SearchThread::run()
 {
-    while(1)
+    while(!isInterruptionRequested())
     {
         read_mount_point();
 
         read_unmount_point();
 
-        check_ftp_transmission();
+        //check_ftp_transmission();
 
         sleep(1);
     }
+
+    qDebug() << "search quit";
 }

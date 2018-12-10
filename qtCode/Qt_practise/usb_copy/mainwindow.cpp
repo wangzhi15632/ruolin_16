@@ -17,7 +17,8 @@ char path_from_full[MAX_PATH_LENGTH];
 sum_t ftp_sum;
 copied_t ftp_transmission;
 time_t ftp_transmission_start_time;
-
+char *path[8] = {"/usb_copy_dir/usb_0_1", "/usb_copy_dir/usb_2_3", "/usb_copy_dir/usb_4_5", "/usb_copy_dir/usb_6_7",
+                      "/usb_copy_dir/usb_8_9", "/usb_copy_dir/usb_10_11", "/usb_copy_dir/usb_12_13", "/usb_copy_dir/usb_14_15"};
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -29,6 +30,17 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+
+    delete searchThread;
+
+    ftpThread->quit();
+    ftpThread->wait();
+    ftpTraverThread->quit();
+    ftpTraverThread->wait();
+
+    qDebug() << "delete ftp";
+    delete ftpWork;
+    delete ftpTraver;
 }
 
 void MainWindow::slotFindDev(char *mountPoint)
@@ -43,6 +55,7 @@ void MainWindow::slotFindDev(char *mountPoint)
 
     CopyThread *copyThread = new CopyThread();//can't add this parameter
 
+    qDebug() << "copyThread addr:" << copyThread;
     connect(copyThread, SIGNAL(sendUDevInfo(int, unsigned long, unsigned long, unsigned long)), this,
             SLOT(slotShow(int, unsigned long, unsigned long, unsigned long)));
     connect(copyThread, SIGNAL(sendToUI(int, sum_t, copied_t, time_t, bool)), this,
@@ -85,8 +98,8 @@ void MainWindow::slotShow(int i, unsigned long block,unsigned long bsize,unsigne
     usb[i].label4->setText(disk_avail);
 
     usb[i].slice_1->setValue(static_cast<double>(bavail)/(static_cast<double>(block)));
-    usb[i].slice_1->setBrush(Qt::lightGray);
-    usb[i].slice_2->setValue((1-  static_cast<double>(bavail)/static_cast<double>(block)));
+    usb[i].slice_1->setBrush(Qt::magenta);
+    usb[i].slice_2->setValue((1 - static_cast<double>(bavail)/static_cast<double>(block)));
     usb[i].slice_2->setBrush(Qt::blue);
 
     qInfo("draw usb %d pie", i);
@@ -111,7 +124,7 @@ void MainWindow::showLocalStorage()
     local.label4->setText(disk_avail);
 
     local.slice_1->setValue(static_cast<double>(s.f_bfree)/(static_cast<double>(s.f_blocks)));
-    local.slice_1->setBrush(Qt::lightGray);
+    local.slice_1->setBrush(Qt::magenta);
     local.slice_2->setValue((1-  static_cast<double>(s.f_bfree)/static_cast<double>(s.f_blocks)));
     local.slice_2->setBrush(Qt::blue);
 }
@@ -127,6 +140,7 @@ void MainWindow::starFtpTime()
 {
     //FTP上传倒计时300S
     timer_ftp->start(3000);
+    ui->textEdit->clear();
 }
 char* MainWindow::human_size(long long s, char *hs)
 {
@@ -216,8 +230,39 @@ void MainWindow::updateFtpProgress(QString str, sum_t ftp_sum, copied_t ftp_tran
         sprintf(speed, "-");
     }
 
-    //usb[i].label6->setText(speed);
+    ui->label_2->setText(speed);
     ui->progressBar->setValue(percent);
+}
+
+void MainWindow::ftpCfgBtnClicked()
+{
+    if(QDialog::Accepted == ftpCfg->exec())
+    {
+        ftpWork->ip = ftpCfg->getIPAddr();
+        ftpWork->port = ftpCfg->getPortAddr();
+        ftpWork->userName = ftpCfg->getUserName();
+        ftpWork->password = ftpCfg->getPassword();
+
+        qDebug() << "ip:%s" << ftpWork->ip;
+        qDebug() << "port:%s" << ftpWork->port;
+        qDebug() << "userName:%s" << ftpWork->userName;
+        qDebug() << "password:%s" << ftpWork->password;
+
+        if(ftpWork->ip != nullptr && ftpWork->port != nullptr)
+        {
+            ftpWork->setHostPort(ftpWork->ip, ftpWork->port.toInt());
+        }
+
+        if(ftpWork->userName != nullptr && ftpWork->password != nullptr)
+        {
+            ftpWork->setUserInfo(ftpWork->userName, ftpWork->password);
+        }
+    }
+}
+
+void MainWindow::test()
+{
+    qDebug() <<"test";
 }
 
 void MainWindow::init()
@@ -226,7 +271,7 @@ void MainWindow::init()
 
     /*config mainWindow size and title*/
     setWindowTitle(tr("16路转储平台 V1.0"));
-    setMinimumSize(QSize(1000, 800));
+    setMinimumSize(QSize(800, 600));
 
     /*regist signal-slot parameter*/
     qRegisterMetaType<sum_t>("sum_t");
@@ -241,6 +286,10 @@ void MainWindow::init()
 
     /*init pie char for usb*/
     drawPieChartInit();
+
+    ftpCfg = new FtpConfig(this);
+    connect(ui->pushButton_ftpCfg, SIGNAL(clicked(bool)), this, SLOT(ftpCfgBtnClicked()));
+
     initTimer();
 #if 0
     /*add scroll bar*/
@@ -263,6 +312,7 @@ void MainWindow::init()
     ftpWork = new FtpManager();
 
     connect(ftpThread, SIGNAL(finished()), ftpThread, SLOT(deleteLater()));
+
     connect(ftpWork, SIGNAL(sendFtpInfo(QString, sum_t, copied_t, time_t)), this,
             SLOT(updateFtpProgress(QString, sum_t, copied_t, time_t)));
 
@@ -394,7 +444,7 @@ void MainWindow::drawPieChartInit()
     local.horizontalLayout_local->addWidget(local.label3);
     local.horizontalLayout_local->addWidget(local.label4);
 
-   local.verticalLayout_local->addLayout(local.horizontalLayout_local);
+    local.verticalLayout_local->addLayout(local.horizontalLayout_local);
 
     for(i = 0; i < USB_MAX_NUM; i++)
     {

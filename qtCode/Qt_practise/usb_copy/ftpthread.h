@@ -40,6 +40,11 @@ private:
     QNetworkAccessManager *accessManager;
     QTimer *ftpTimeOut_timer;
     long long size;
+public:
+    QString ip;
+    QString port;
+    QString userName;
+    QString password;
 };
 
 #endif // FTPTHREAD_H
