@@ -22,7 +22,7 @@
 #define MSGT_VERBOSE 3
 #define MSGT_DEMO 4
 
-class CopyThread;
+//class CopyThread;
 typedef struct sum
 {
     int file;
@@ -40,6 +40,7 @@ typedef struct copied
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 #ifdef __cplusplus
 }
 #endif

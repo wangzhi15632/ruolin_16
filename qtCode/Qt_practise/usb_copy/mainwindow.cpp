@@ -114,8 +114,9 @@ void MainWindow::showLocalStorage()
 
     memset(&s, 0, sizeof(struct statfs));
 
-    if(0 != statfs("/home/wz/test1", &s))
+    if(0 != statfs("/usb_copy_dir", &s))
         return;
+
 
     human_size(s.f_blocks * s.f_bsize, disk_size);
     human_size(s.f_blocks * s.f_bsize - s.f_bfree * s.f_bsize, disk_avail);
@@ -268,7 +269,6 @@ void MainWindow::test()
 void MainWindow::init()
 {
     qDebug() << "main thread: " << QThread::currentThread();
-
     /*config mainWindow size and title*/
     setWindowTitle(tr("16路转储平台 V1.0"));
     setMinimumSize(QSize(800, 600));

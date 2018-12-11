@@ -7,6 +7,7 @@
 CopyThread::CopyThread()
 {
     rcvFlag = false;
+    transcodingFlag = true; //默认进行转码
 }
 
 void CopyThread::test()

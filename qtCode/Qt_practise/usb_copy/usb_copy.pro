@@ -45,7 +45,8 @@ HEADERS += \
     copythread.h \
     ftpthread.h \
     ftp_traversing.h \
-    ftpconfig.h
+    ftpconfig.h \
+    lib/libstorage.h
 
 FORMS += \
         mainwindow.ui \
@@ -57,3 +58,10 @@ LIBS += -lpthread
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+unix:!macx: LIBS += -L$$PWD/lib/ -lstorage
+
+INCLUDEPATH += $$PWD/.
+DEPENDPATH += $$PWD/.
+
+unix:!macx: PRE_TARGETDEPS += $$PWD/lib/libstorage.a

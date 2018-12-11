@@ -15,7 +15,7 @@ CXX           = g++
 DEFINES       = -DQT_DEPRECATED_WARNINGS -DQT_MESSAGELOGCONTEXT -DQT_NO_DEBUG -DQT_CHARTS_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -O2 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -O2 -std=gnu++11 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
-INCPATH       = -I../usb_copy -I. -I../../../../Qt5.8.0/5.8/gcc_64/include -I../../../../Qt5.8.0/5.8/gcc_64/include/QtCharts -I../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets -I../../../../Qt5.8.0/5.8/gcc_64/include/QtGui -I../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork -I../../../../Qt5.8.0/5.8/gcc_64/include/QtCore -I. -isystem /usr/include/libdrm -I. -I../../../../Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++
+INCPATH       = -I../usb_copy -I. -I../usb_copy -I../../../../Qt5.8.0/5.8/gcc_64/include -I../../../../Qt5.8.0/5.8/gcc_64/include/QtCharts -I../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets -I../../../../Qt5.8.0/5.8/gcc_64/include/QtGui -I../../../../Qt5.8.0/5.8/gcc_64/include/QtNetwork -I../../../../Qt5.8.0/5.8/gcc_64/include/QtCore -I. -isystem /usr/include/libdrm -I. -I../../../../Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++
 QMAKE         = /home/wz/Qt5.8.0/5.8/gcc_64/bin/qmake
 DEL_FILE      = rm -f
 CHK_DIR_EXISTS= test -d
@@ -36,7 +36,7 @@ DISTNAME      = usb_copy1.0.0
 DISTDIR = /home/wz/code/qtCode/Qt_practise/build-usb_copy-Desktop_Qt_5_8_0_GCC_64bit-Release/.tmp/usb_copy1.0.0
 LINK          = g++
 LFLAGS        = -Wl,-O1 -Wl,-rpath,/home/wz/Qt5.8.0/5.8/gcc_64/lib
-LIBS          = $(SUBLIBS) -L/home/wz/Qt5.8.0/5.8/gcc_64/lib -lQt5Charts -lQt5Widgets -lQt5Gui -lQt5Network -lQt5Core -lGL -lpthread 
+LIBS          = $(SUBLIBS) -L/home/wz/code/qtCode/Qt_practise/usb_copy/lib/ -lstorage -L/home/wz/Qt5.8.0/5.8/gcc_64/lib -lQt5Charts -lQt5Widgets -lQt5Gui -lQt5Network -lQt5Core -lGL -lpthread 
 AR            = ar cqs
 RANLIB        = 
 SED           = sed
@@ -256,7 +256,8 @@ DIST          = ../../../../Qt5.8.0/5.8/gcc_64/mkspecs/features/spec_pre.prf \
 		../usb_copy/copythread.h \
 		../usb_copy/ftpthread.h \
 		../usb_copy/ftp_traversing.h \
-		../usb_copy/ftpconfig.h ../usb_copy/main.cpp \
+		../usb_copy/ftpconfig.h \
+		../usb_copy/lib/libstorage.h ../usb_copy/main.cpp \
 		../usb_copy/mainwindow.cpp \
 		../usb_copy/usb_main.cpp \
 		../usb_copy/usb_copy.cpp \
@@ -274,7 +275,7 @@ TARGET        = usb_copy
 first: all
 ####### Build rules
 
-$(TARGET): ui_mainwindow.h ui_ftpconfig.h $(OBJECTS)  
+$(TARGET): /home/wz/code/qtCode/Qt_practise/usb_copy/lib/libstorage.a ui_mainwindow.h ui_ftpconfig.h $(OBJECTS)  
 	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(OBJCOMP) $(LIBS)
 
 Makefile: ../usb_copy/usb_copy.pro ../../../../Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++/qmake.conf ../../../../Qt5.8.0/5.8/gcc_64/mkspecs/features/spec_pre.prf \
@@ -643,7 +644,7 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents ../../../../Qt5.8.0/5.8/gcc_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ../usb_copy/mainwindow.h ../usb_copy/config.h ../usb_copy/usb_copy.h ../usb_copy/usb_main.h ../usb_copy/searchthread.h ../usb_copy/copythread.h ../usb_copy/ftpthread.h ../usb_copy/ftp_traversing.h ../usb_copy/ftpconfig.h $(DISTDIR)/
+	$(COPY_FILE) --parents ../usb_copy/mainwindow.h ../usb_copy/config.h ../usb_copy/usb_copy.h ../usb_copy/usb_main.h ../usb_copy/searchthread.h ../usb_copy/copythread.h ../usb_copy/ftpthread.h ../usb_copy/ftp_traversing.h ../usb_copy/ftpconfig.h ../usb_copy/lib/libstorage.h $(DISTDIR)/
 	$(COPY_FILE) --parents ../usb_copy/main.cpp ../usb_copy/mainwindow.cpp ../usb_copy/usb_main.cpp ../usb_copy/usb_copy.cpp ../usb_copy/searchthread.cpp ../usb_copy/copythread.cpp ../usb_copy/generatelogfile.cpp ../usb_copy/ftpthread.cpp ../usb_copy/ftp_traversing.cpp ../usb_copy/ftpconfig.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents ../usb_copy/mainwindow.ui ../usb_copy/ftpconfig.ui $(DISTDIR)/
 
@@ -1249,7 +1250,7 @@ moc_mainwindow.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QMainWindow
 		../usb_copy/mainwindow.h \
 		moc_predefs.h \
 		../../../../Qt5.8.0/5.8/gcc_64/bin/moc
-	/home/wz/Qt5.8.0/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/wz/Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++ -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/Qt5.8.0/5.8/gcc_64/include -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCharts -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtWidgets -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtGui -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtNetwork -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../usb_copy/mainwindow.h -o moc_mainwindow.cpp
+	/home/wz/Qt5.8.0/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/wz/Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++ -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/Qt5.8.0/5.8/gcc_64/include -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCharts -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtWidgets -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtGui -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtNetwork -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../usb_copy/mainwindow.h -o moc_mainwindow.cpp
 
 moc_searchthread.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QThread \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qthread.h \
@@ -1303,7 +1304,7 @@ moc_searchthread.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QThread \
 		../usb_copy/searchthread.h \
 		moc_predefs.h \
 		../../../../Qt5.8.0/5.8/gcc_64/bin/moc
-	/home/wz/Qt5.8.0/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/wz/Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++ -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/Qt5.8.0/5.8/gcc_64/include -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCharts -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtWidgets -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtGui -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtNetwork -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../usb_copy/searchthread.h -o moc_searchthread.cpp
+	/home/wz/Qt5.8.0/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/wz/Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++ -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/Qt5.8.0/5.8/gcc_64/include -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCharts -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtWidgets -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtGui -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtNetwork -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../usb_copy/searchthread.h -o moc_searchthread.cpp
 
 moc_copythread.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QThread \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qthread.h \
@@ -1872,10 +1873,11 @@ moc_copythread.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QThread \
 		../usb_copy/ftpconfig.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QDialog \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QMessageBox \
+		../usb_copy/lib/libstorage.h \
 		../usb_copy/copythread.h \
 		moc_predefs.h \
 		../../../../Qt5.8.0/5.8/gcc_64/bin/moc
-	/home/wz/Qt5.8.0/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/wz/Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++ -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/Qt5.8.0/5.8/gcc_64/include -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCharts -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtWidgets -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtGui -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtNetwork -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../usb_copy/copythread.h -o moc_copythread.cpp
+	/home/wz/Qt5.8.0/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/wz/Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++ -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/Qt5.8.0/5.8/gcc_64/include -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCharts -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtWidgets -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtGui -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtNetwork -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../usb_copy/copythread.h -o moc_copythread.cpp
 
 moc_ftpthread.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QUrl \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qurl.h \
@@ -1981,7 +1983,7 @@ moc_ftpthread.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QUrl \
 		../usb_copy/ftpthread.h \
 		moc_predefs.h \
 		../../../../Qt5.8.0/5.8/gcc_64/bin/moc
-	/home/wz/Qt5.8.0/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/wz/Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++ -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/Qt5.8.0/5.8/gcc_64/include -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCharts -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtWidgets -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtGui -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtNetwork -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../usb_copy/ftpthread.h -o moc_ftpthread.cpp
+	/home/wz/Qt5.8.0/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/wz/Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++ -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/Qt5.8.0/5.8/gcc_64/include -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCharts -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtWidgets -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtGui -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtNetwork -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../usb_copy/ftpthread.h -o moc_ftpthread.cpp
 
 moc_ftp_traversing.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QString \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qstring.h \
@@ -2036,7 +2038,7 @@ moc_ftp_traversing.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QString \
 		../usb_copy/ftp_traversing.h \
 		moc_predefs.h \
 		../../../../Qt5.8.0/5.8/gcc_64/bin/moc
-	/home/wz/Qt5.8.0/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/wz/Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++ -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/Qt5.8.0/5.8/gcc_64/include -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCharts -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtWidgets -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtGui -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtNetwork -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../usb_copy/ftp_traversing.h -o moc_ftp_traversing.cpp
+	/home/wz/Qt5.8.0/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/wz/Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++ -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/Qt5.8.0/5.8/gcc_64/include -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCharts -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtWidgets -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtGui -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtNetwork -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../usb_copy/ftp_traversing.h -o moc_ftp_traversing.cpp
 
 moc_ftpconfig.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QDialog \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/qdialog.h \
@@ -2145,7 +2147,7 @@ moc_ftpconfig.cpp: ../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QDialog \
 		../usb_copy/ftpconfig.h \
 		moc_predefs.h \
 		../../../../Qt5.8.0/5.8/gcc_64/bin/moc
-	/home/wz/Qt5.8.0/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/wz/Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++ -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/Qt5.8.0/5.8/gcc_64/include -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCharts -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtWidgets -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtGui -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtNetwork -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../usb_copy/ftpconfig.h -o moc_ftpconfig.cpp
+	/home/wz/Qt5.8.0/5.8/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/home/wz/Qt5.8.0/5.8/gcc_64/mkspecs/linux-g++ -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/code/qtCode/Qt_practise/usb_copy -I/home/wz/Qt5.8.0/5.8/gcc_64/include -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCharts -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtWidgets -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtGui -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtNetwork -I/home/wz/Qt5.8.0/5.8/gcc_64/include/QtCore -I. -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../usb_copy/ftpconfig.h -o moc_ftpconfig.cpp
 
 compiler_moc_source_make_all:
 compiler_moc_source_clean:
@@ -3308,17 +3310,9 @@ mainwindow.o: ../usb_copy/mainwindow.cpp ../usb_copy/mainwindow.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QDialog \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QMessageBox \
 		ui_mainwindow.h \
-		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QAction \
-		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QApplication \
-		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QButtonGroup \
-		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QGroupBox \
-		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QHBoxLayout \
-		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QHeaderView \
-		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QMenuBar \
-		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QStatusBar \
-		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QToolBar \
 		../usb_copy/usb_main.h \
 		../usb_copy/copythread.h \
+		../usb_copy/lib/libstorage.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCharts/QChartView \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QSemaphore
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o ../usb_copy/mainwindow.cpp
@@ -3891,10 +3885,12 @@ usb_main.o: ../usb_copy/usb_main.cpp ../usb_copy/usb_copy.h \
 		../usb_copy/ftpconfig.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QDialog \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QMessageBox \
-		../usb_copy/copythread.h
+		../usb_copy/copythread.h \
+		../usb_copy/lib/libstorage.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o usb_main.o ../usb_copy/usb_main.cpp
 
 usb_copy.o: ../usb_copy/usb_copy.cpp ../usb_copy/usb_copy.h \
+		../usb_copy/lib/libstorage.h \
 		../usb_copy/copythread.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/QThread \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtCore/qthread.h \
@@ -5098,7 +5094,8 @@ copythread.o: ../usb_copy/copythread.cpp ../usb_copy/copythread.h \
 		../usb_copy/ftp_traversing.h \
 		../usb_copy/ftpconfig.h \
 		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QDialog \
-		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QMessageBox
+		../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/QMessageBox \
+		../usb_copy/lib/libstorage.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o copythread.o ../usb_copy/copythread.cpp
 
 generatelogfile.o: ../usb_copy/generatelogfile.cpp ../../../../Qt5.8.0/5.8/gcc_64/include/QtWidgets/qapplication.h \

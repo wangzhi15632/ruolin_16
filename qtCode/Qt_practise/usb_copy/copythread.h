@@ -3,9 +3,25 @@
 
 #include <QThread>
 #include "usb_copy.h"
+#include "lib/libstorage.h"
+
 #include "mainwindow.h"
 
 class MainWindow;
+
+typedef struct file_name
+{
+    char sTrainNum[32];           /*列车号*/
+    char sCarriageNum[32];        /*车厢号*/
+    char sDriverNum[32];          /*司机号*/
+    char sYear[4];
+    char sMonth[2];
+    char sDay[2];
+    char sHour[2];
+    char sMinutes[2];
+    char sSeconds[2];
+
+}file_name_t;
 
 class CopyThread : public QThread
 {
@@ -29,7 +45,9 @@ private:
     int cp_task(char *dir);
     int sum_up(const char* path_tree, const struct stat* st);
     int action(const char* path_from, const char* path_to, const char* path_tree, const struct stat* st);
-
+    void is_transcoding();
+    void transcoding_sum();
+    void transcoding_copy(const char *path_to);
 private slots:
    void test();
 
@@ -40,13 +58,13 @@ signals:
 public:
     char mountDir[20];
     bool rcvFlag;
+    bool transcodingFlag;
 
 private:
    sum_t sum;
    copied_t copied;
    time_t copy_start_time;
    int num;
-
 };
 
 

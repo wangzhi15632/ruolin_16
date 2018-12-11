@@ -13,6 +13,8 @@
 #include <stdarg.h>  
 #include <errno.h> 
 #include "usb_copy.h"
+#include "lib/libstorage.h"
+
 #include "copythread.h"
   
 /* 
@@ -144,13 +146,13 @@ int CopyThread::walk_sum(const char* path_from, const char* path_to, const char*
     struct stat st;  
     DIR* dir = nullptr;
     struct dirent *entry = nullptr;
-    char path_tree_new[MAX_PATH_LENGTH];  
-    char path_from_full[MAX_PATH_LENGTH];  
-    int ret_val = OPP_CONTINUE;  
+    char path_tree_new[MAX_PATH_LENGTH];
+    char path_from_full[MAX_PATH_LENGTH];
+    int ret_val = OPP_CONTINUE;
   
-    /*获得源的属性*/  
-    make_path(path_from_full, path_from, path_tree);  
-    if(-1 == stat(path_from_full, &st))  
+    /*获得源的属性*/
+    make_path(path_from_full, path_from, path_tree);
+    if(-1 == stat(path_from_full, &st))
     {  
         //print_message(MSGT_ERROR, "can't access \"%s\".\n", path_from_full);
         return OPP_SKIP;  
@@ -440,6 +442,268 @@ bool CopyThread::is_self_copy(const char* src, const char* dest)
     }  
 }  
 
+/**/
+void CopyThread::is_transcoding()
+{
+    struct stat st;
+    DIR* dir = nullptr;
+    struct dirent *entry = nullptr;
+    uint count = 0, num = 0;
+
+    if(-1 == stat(mountDir, &st))
+    {
+        //print_message(MSGT_ERROR, "can't access \"%s\".\n", path_from_full);
+        return;
+    }
+
+    /*如果是目录，则浏览目录，否则结束*/
+    if(!S_ISDIR(st.st_mode))
+    {
+        return;
+    }
+
+    /*打开目录*/
+    if(!(dir = opendir(mountDir)))
+    {
+       // print_message(MSGT_ERROR, "can't open directory \"%s\".\n", path_from_full);
+        return;
+    }
+
+    /*浏览目录*/
+    while(count < 10)
+    {
+        entry = readdir(dir);
+        if((strcmp(".", entry->d_name) == 0 || strcmp("..", entry->d_name) == 0))
+            continue;
+
+        if(NULL == strstr(entry->d_name, "hiv"))
+        {
+            num++;
+        }
+
+        count ++;
+        transcodingFlag = true;
+    }
+
+    if(num > 5)
+        transcodingFlag = false;
+
+    closedir(dir);
+    return;
+}
+
+void CopyThread::transcoding_sum()
+{
+    int iTypeNum = 0;
+
+    TYPE_CHAN_MAP_T stTypeChanMap[8];
+
+    RECORD_SEARCH_PARAM_T stSearchParam;
+    int iType, iChan;
+
+    void *pHandle;
+    RECORD_INFO_T stRecInfo;
+
+    memset(&stTypeChanMap[0], 0, sizeof(TYPE_CHAN_MAP_T) * 8);
+    memset(&stSearchParam, 0, sizeof(RECORD_SEARCH_PARAM_T));
+    memset(&stRecInfo, 0, sizeof(RECORD_INFO_T));
+
+    if(storage_init(mountDir) != 0)
+    {
+        qCritical("can not init storage\n");
+        return;
+    }
+
+    iTypeNum = storage_type_chan_map_get(&stTypeChanMap[0], 8);
+    if(iTypeNum < 0)
+    {
+        qCritical("storage_type_chan_map_get failed\n");
+        return;
+    }
+    qDebug() << "iTypeNum" << iTypeNum;
+
+    stSearchParam.uStartTime = 0;
+    stSearchParam.uEndTime = 0;
+
+    for(iType = 0; iType < iTypeNum; iType++)
+    {
+        for(iChan = (int)stTypeChanMap[iType].StartChan; iChan <= (int)stTypeChanMap[iType].EndChan; iChan++)
+        {
+            qDebug() << "iChan" << iChan;
+            stSearchParam.iType = iType;
+            stSearchParam.iChan = iChan;
+            qDebug() << "pHandle" << pHandle;
+
+            pHandle = storage_record_list_create(&stSearchParam);
+            if(pHandle == NULL)
+            {
+                qCritical("storage_record_list_create failed\n");
+                continue;
+            }
+
+            int a;
+            a = storage_record_list_dequeue(pHandle, &stRecInfo);
+            qDebug() << "int" << a;
+
+            while(storage_record_list_dequeue(pHandle, &stRecInfo) == 0)
+            {
+                qDebug() << "found file";
+                sum.file++;
+                sum.size += stRecInfo.uFileSize;
+            }
+        }
+
+        storage_record_list_release(pHandle);
+    }
+    qDebug() <<"file " <<sum.file;
+}
+
+void CopyThread::transcoding_copy(const char *path_to)
+{
+    int iTypeNum = 0;
+    TYPE_CHAN_MAP_T stTypeChanMap[8];
+
+    RECORD_SEARCH_PARAM_T stSearchParam;
+    int iType, iChan;
+
+    void *pHandle = nullptr;
+    RECORD_INFO_T stRecInfo;
+
+    DEV_INFO_T stDevInfo;
+    void *pFileHandle = nullptr;
+
+    file_name_t file_name;
+    char outPutFileName[100] = {0};
+    FILE *pOutPutFile;
+    char fileName[100] = {0};
+    unsigned char pFileBuf[1024 * 256] = {0};
+    size_t rd, wr, swr;
+
+    memset(&file_name, 0, sizeof(file_name_t));
+    memset(&stTypeChanMap[0], 0, sizeof(TYPE_CHAN_MAP_T) * 8);
+    memset(&stSearchParam, 0, sizeof(RECORD_SEARCH_PARAM_T));
+    memset(&stRecInfo, 0, sizeof(RECORD_INFO_T));
+    memset(&stDevInfo, 0, sizeof(DEV_INFO_T));
+
+    iTypeNum = storage_type_chan_map_get(&stTypeChanMap[0], 8);
+    if(iTypeNum < 0)
+    {
+        qCritical("storage_type_chan_map_get failed\n");
+        return;
+    }
+
+    stSearchParam.uStartTime = 0;
+    stSearchParam.uEndTime = 0;
+
+    for(iType = 0; iType < iTypeNum; iType++)
+    {
+        for(iChan = (int)stTypeChanMap[iType].StartChan; iChan <= (int)stTypeChanMap[iType].EndChan; iChan++)
+        {
+            stSearchParam.iType = iType;
+            stSearchParam.iChan = iChan;
+            pHandle = storage_record_list_create(&stSearchParam);
+            if(pHandle == NULL)
+            {
+                qCritical("storage_record_list_create failed\n");
+                continue;
+            }
+
+            while(storage_record_list_dequeue(pHandle, &stRecInfo) == 0)
+            {
+                if(storage_record_dev_info_get(&stRecInfo.sName[0], &stDevInfo) != 0)
+                {
+                    qCritical("storage_record_dev_info_get failed:%s", stRecInfo.sName);
+                    continue;
+                }
+
+                pFileHandle = storage_record_open(&stRecInfo.sName[0]);
+                if(pFileHandle == NULL)
+                {
+                    qCritical("storage_record_open faile:%s", stRecInfo.sName);
+                    continue;
+                }
+
+                memcpy(&file_name.sCarriageNum[0], &stDevInfo.sCarriageNum[0], strlen(stDevInfo.sCarriageNum));
+                memcpy(&file_name.sTrainNum[0], &stDevInfo.sTrainNum[0], strlen(stDevInfo.sTrainNum));
+                memcpy(&file_name.sDriverNum[0], &stDevInfo.sDriverNum[0], strlen(stDevInfo.sDriverNum));
+                memcpy(&file_name.sYear[0], &stRecInfo.sName[5], 4);
+                memcpy(&file_name.sMonth[0], &stRecInfo.sName[9], 2);
+                memcpy(&file_name.sDay[0], &stRecInfo.sName[11], 2);
+                memcpy(&file_name.sHour[0], &stRecInfo.sName[14], 2);
+                memcpy(&file_name.sMinutes[0], &stRecInfo.sName[16], 2);
+                memcpy(&file_name.sSeconds[0], &stRecInfo.sName[18], 2);
+
+                if(strlen(file_name.sCarriageNum) == 0)
+                {
+                    if(strlen(file_name.sDriverNum) == 0)
+                    {
+                        sprintf(fileName, "%s_%s-%s-%s_%s-%s-%s", &file_name.sTrainNum[0], &file_name.sYear[0],
+                            &file_name.sMonth[0], &file_name.sDay[0], &file_name.sHour[0], &file_name.sMinutes[0],
+                            &file_name.sSeconds[0]);
+                    }
+                    else
+                    {
+                        sprintf(fileName, "%s_%s_%s-%s-%s_%s-%s-%s", &file_name.sTrainNum[0], &file_name.sDriverNum[0],&file_name.sYear[0],
+                            &file_name.sMonth[0], &file_name.sDay[0], &file_name.sHour[0], &file_name.sMinutes[0],
+                            &file_name.sSeconds[0]);
+                    }
+                }
+                else
+                {
+                    if(strlen(file_name.sDriverNum) == 0)
+                    {
+                        sprintf(fileName, "%s_%s_%s-%s-%s_%s-%s-%s", &file_name.sCarriageNum[0],
+                                &file_name.sTrainNum[0], &file_name.sYear[0],&file_name.sMonth[0],
+                                &file_name.sDay[0], &file_name.sHour[0], &file_name.sMinutes[0],
+                            &file_name.sSeconds[0]);
+                    }
+                    else
+                    {
+                        sprintf(fileName, "%s_%s_%s_%s-%s-%s_%s-%s-%s", &file_name.sCarriageNum[0],
+                                &file_name.sTrainNum[0],&file_name.sDriverNum[0],&file_name.sYear[0],
+                            &file_name.sMonth[0], &file_name.sDay[0], &file_name.sHour[0],
+                                &file_name.sMinutes[0],&file_name.sSeconds[0]);
+                    }
+                }
+
+                sprintf(outPutFileName, "%s/%s", path_to, fileName);
+                pOutPutFile = fopen(outPutFileName, "wb");
+                if(pOutPutFile == NULL)
+                {
+                    qCritical("create output file failed, path:%s", outPutFileName);
+                    storage_record_close(pFileHandle);
+                    continue;
+                }
+
+                while((rd = storage_record_read(pFileHandle, pFileBuf, 1024*256)) > 0)
+                {
+                    wr = 0;
+                    do
+                    {
+                        swr = fwrite(pFileBuf + wr, 1, rd - wr, pOutPutFile);
+                        wr += swr;
+                    }
+                    while(swr > 0 && wr < rd);
+                    copied.size += rd;
+
+                    if(wr != rd)
+                    {
+                        /*只有部分文件被复制也视为成功因为文件系统中已经有这个文件的记录了*/
+                        qCritical("write file error %s.\n", outPutFileName);
+                        break;
+                    }
+                }
+                fclose(pOutPutFile);
+                storage_record_close(pFileHandle);
+                copied.file++;
+                emit(sendToUI(num, sum, copied, copy_start_time, false));
+            }
+        }
+
+        storage_record_list_release(pHandle);
+    }
+}
+
 /*主函数，做两次遍历*/  
 int CopyThread::cp_task(char *dir)
 {  
@@ -450,7 +714,7 @@ int CopyThread::cp_task(char *dir)
     sum.file = 0;  
     sum.dir = 0;  
     sum.size = 0;  
-#if 1
+
     if((num >= 0) && (num <= 1))
     {
         path_to = path[0];
@@ -483,65 +747,72 @@ int CopyThread::cp_task(char *dir)
     {
         path_to = path[7];
     }
-#endif
-   // path_to = "/usb_copy_dir";
+
     path_from = dir;
+    is_transcoding();
+    /**/
+    if(transcodingFlag == true)
+    {
+        transcoding_sum();
+        transcoding_copy(path_to);
+    }
+    else
+    {
+        walk_sum(path_from, path_to, nullptr);
+        if(sum.file == 0 && sum.dir == 0)
+        {
+            qInfo("nothing found.\n");
+        }
+        else
+        {
+            /* 第二次遍历：执行*/
+            copied.file = 0;
+            copied.dir = 0;
+            copied.size = 0;
 
-    walk_sum(path_from, path_to, nullptr);
-      
-    if(sum.file == 0 && sum.dir == 0)  
-    {  
-        qInfo("nothing found.\n");
-    }  
-    else  
-    {  
-        /* 第二次遍历：执行*/  
-        copied.file = 0;  
-        copied.dir = 0;  
-        copied.size = 0;  
-  
-        // 设置一个定时器，每隔1秒显示一下进度   
-        time(&copy_start_time);  
+            // 设置一个定时器，每隔1秒显示一下进度
+            time(&copy_start_time);
 
-        path_from = dir;  
+            path_from = dir;
 
-        /*源是否存在*/  
-        if(-1 == stat(path_from, &st_src))  
-        {  
-            qCritical("\"%s\" doesn't exist.\n", path_from);
-            return 0;  
-        }  
-      
-        /* 
-        * 如果源是文件而且目标是已经存在的目录，则自动补齐文件名 
-        * 如果目标是已经存在的文件，先判断是否指向同一个文件 inode number 
-        */  
-        if(S_ISREG(st_src.st_mode))  
-        {  
-            if((0 == stat(path_to, &st_dest)) && S_ISDIR(st_dest.st_mode))  
-            {  
-                file_name = strrchr(path_from, '/');  
-                path_to = make_path(path_to_fixed, path_to, file_name ? file_name + 1 : path_from);  
-            }  
-        }  
-        else if(S_ISDIR(st_src.st_mode))  
-        {  
-            if(is_self_copy(path_from, path_to))  
-            {  
-                /*源是目录时要防止循环复制*/  
-                qCritical("can't xcp \"%s\" -> \"%s\"\n", path_from, path_to);
-                return 0;  
-            }  
-        }  
-        else  
-        {  
-            qWarning("skip \"%s\" not a file nor a directory.\n", path_from);
-            return 0;  
-        }  
+            /*源是否存在*/
+            if(-1 == stat(path_from, &st_src))
+            {
+                qCritical("\"%s\" doesn't exist.\n", path_from);
+                return 0;
+            }
 
-        walk_copy(path_from, path_to, nullptr);
-    }  
-  
-    return 0;  
+            /*
+            * 如果源是文件而且目标是已经存在的目录，则自动补齐文件名
+            * 如果目标是已经存在的文件，先判断是否指向同一个文件 inode number
+            */
+            if(S_ISREG(st_src.st_mode))
+            {
+                if((0 == stat(path_to, &st_dest)) && S_ISDIR(st_dest.st_mode))
+                {
+                    file_name = strrchr(path_from, '/');
+                    path_to = make_path(path_to_fixed, path_to, file_name ? file_name + 1 : path_from);
+                }
+            }
+            else if(S_ISDIR(st_src.st_mode))
+            {
+                if(is_self_copy(path_from, path_to))
+                {
+                    /*源是目录时要防止循环复制*/
+                    qCritical("can't xcp \"%s\" -> \"%s\"\n", path_from, path_to);
+                    return 0;
+                }
+            }
+            else
+            {
+                qWarning("skip \"%s\" not a file nor a directory.\n", path_from);
+                return 0;
+            }
+
+            walk_copy(path_from, path_to, nullptr);
+        }
+    }
+
+    return 0;
 }  
 
