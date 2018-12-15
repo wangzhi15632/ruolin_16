@@ -501,7 +501,7 @@ void CopyThread::transcoding_sum()
     RECORD_SEARCH_PARAM_T stSearchParam;
     int iType, iChan;
 
-    void *pHandle;
+    void *pHandle = nullptr;
     RECORD_INFO_T stRecInfo;
 
     memset(&stTypeChanMap[0], 0, sizeof(TYPE_CHAN_MAP_T) * 8);
@@ -520,19 +520,16 @@ void CopyThread::transcoding_sum()
         qCritical("storage_type_chan_map_get failed\n");
         return;
     }
-    qDebug() << "iTypeNum" << iTypeNum;
 
     stSearchParam.uStartTime = 0;
-    stSearchParam.uEndTime = 0;
+    stSearchParam.uEndTime = -1;
 
     for(iType = 0; iType < iTypeNum; iType++)
     {
         for(iChan = (int)stTypeChanMap[iType].StartChan; iChan <= (int)stTypeChanMap[iType].EndChan; iChan++)
         {
-            qDebug() << "iChan" << iChan;
             stSearchParam.iType = iType;
             stSearchParam.iChan = iChan;
-            qDebug() << "pHandle" << pHandle;
 
             pHandle = storage_record_list_create(&stSearchParam);
             if(pHandle == NULL)
@@ -541,21 +538,17 @@ void CopyThread::transcoding_sum()
                 continue;
             }
 
-            int a;
-            a = storage_record_list_dequeue(pHandle, &stRecInfo);
-            qDebug() << "int" << a;
-
             while(storage_record_list_dequeue(pHandle, &stRecInfo) == 0)
             {
-                qDebug() << "found file";
                 sum.file++;
+                qDebug() << sum.file << stRecInfo.sName;
                 sum.size += stRecInfo.uFileSize;
             }
         }
 
         storage_record_list_release(pHandle);
     }
-    qDebug() <<"file " <<sum.file;
+    qDebug() <<"file " << sum.file;
 }
 
 void CopyThread::transcoding_copy(const char *path_to)
@@ -576,8 +569,9 @@ void CopyThread::transcoding_copy(const char *path_to)
     char outPutFileName[100] = {0};
     FILE *pOutPutFile;
     char fileName[100] = {0};
-    unsigned char pFileBuf[1024 * 256] = {0};
+    unsigned char pFileBuf[1024 * 256];
     size_t rd, wr, swr;
+    char *ret = nullptr;
 
     memset(&file_name, 0, sizeof(file_name_t));
     memset(&stTypeChanMap[0], 0, sizeof(TYPE_CHAN_MAP_T) * 8);
@@ -593,7 +587,7 @@ void CopyThread::transcoding_copy(const char *path_to)
     }
 
     stSearchParam.uStartTime = 0;
-    stSearchParam.uEndTime = 0;
+    stSearchParam.uEndTime = -1;
 
     for(iType = 0; iType < iTypeNum; iType++)
     {
@@ -665,8 +659,10 @@ void CopyThread::transcoding_copy(const char *path_to)
                                 &file_name.sMinutes[0],&file_name.sSeconds[0]);
                     }
                 }
+                ret = strchr(&stRecInfo.sName[0], '.');
 
-                sprintf(outPutFileName, "%s/%s", path_to, fileName);
+                sprintf(outPutFileName, "%s/%s%s", path_to, fileName, ret);
+                qDebug() << "file" << outPutFileName;
                 pOutPutFile = fopen(outPutFileName, "wb");
                 if(pOutPutFile == NULL)
                 {
@@ -693,6 +689,7 @@ void CopyThread::transcoding_copy(const char *path_to)
                         break;
                     }
                 }
+                qDebug() << "coped one";
                 fclose(pOutPutFile);
                 storage_record_close(pFileHandle);
                 copied.file++;
@@ -750,7 +747,15 @@ int CopyThread::cp_task(char *dir)
 
     path_from = dir;
     is_transcoding();
-    /**/
+
+    time(&copy_start_time);
+    sum.file = 0;
+    sum.dir = 0;
+    sum.size = 0;
+    copied.file = 0;
+    copied.dir = 0;
+    copied.size = 0;
+
     if(transcodingFlag == true)
     {
         transcoding_sum();
@@ -765,14 +770,6 @@ int CopyThread::cp_task(char *dir)
         }
         else
         {
-            /* 第二次遍历：执行*/
-            copied.file = 0;
-            copied.dir = 0;
-            copied.size = 0;
-
-            // 设置一个定时器，每隔1秒显示一下进度
-            time(&copy_start_time);
-
             path_from = dir;
 
             /*源是否存在*/

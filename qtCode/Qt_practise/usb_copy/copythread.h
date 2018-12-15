@@ -14,12 +14,12 @@ typedef struct file_name
     char sTrainNum[32];           /*列车号*/
     char sCarriageNum[32];        /*车厢号*/
     char sDriverNum[32];          /*司机号*/
-    char sYear[4];
-    char sMonth[2];
-    char sDay[2];
-    char sHour[2];
-    char sMinutes[2];
-    char sSeconds[2];
+    char sYear[5];
+    char sMonth[3];
+    char sDay[3];
+    char sHour[3];
+    char sMinutes[3];
+    char sSeconds[3];
 
 }file_name_t;
 
