@@ -48,6 +48,13 @@ private:
     void is_transcoding();
     void transcoding_sum();
     void transcoding_copy(const char *path_to);
+    int search_dir_to_write(char *dir, unsigned int i);
+    bool is_dir_larger(char *dir);
+    bool is_dir_writting_num(unsigned int i);
+    void dir_full_and_delete(char *dir, char *dir_tree);
+    int delete_min_time_dir(char *dir_del);
+
+
 private slots:
    void test();
 
@@ -59,12 +66,15 @@ public:
     char mountDir[20];
     bool rcvFlag;
     bool transcodingFlag;
+    unsigned long long usb_size;   /*当前U盘已用空间*/
 
 private:
    sum_t sum;
    copied_t copied;
    time_t copy_start_time;
    int num;
+   char file_name[1000][100];
+   int file_num;
 };
 
 

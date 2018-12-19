@@ -12,13 +12,16 @@
 
 QSemaphore CopyThreadNum(USB_MAX_NUM);
 bool ftpFlag = true;
-QMutex mutex, ftp_mutex;
+QMutex mutex, ftp_mutex, copy_num_mutex;
 char path_from_full[MAX_PATH_LENGTH];
 sum_t ftp_sum;
 copied_t ftp_transmission;
 time_t ftp_transmission_start_time;
 char *path[8] = {"/usb_copy_dir/usb_0_1", "/usb_copy_dir/usb_2_3", "/usb_copy_dir/usb_4_5", "/usb_copy_dir/usb_6_7",
                       "/usb_copy_dir/usb_8_9", "/usb_copy_dir/usb_10_11", "/usb_copy_dir/usb_12_13", "/usb_copy_dir/usb_14_15"};
+/*记录目录当前正在写入的USB设备，为了保证拷贝速率，目录正在拷贝的USB设备不能大于2*/
+unsigned int dir_writting_num[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -73,7 +76,7 @@ void MainWindow::slotCloseDev(int num)
     usb[num].clearFlag = true;
 
     usb[num].slice_1->setValue(1);
-    usb[num].slice_1->setBrush(Qt::darkGray);
+   // usb[num].slice_1->setBrush(Qt::darkGray);
     usb[num].slice_2->setValue(0);
 
     usb[num].label2->clear();
@@ -98,9 +101,7 @@ void MainWindow::slotShow(int i, unsigned long block,unsigned long bsize,unsigne
     usb[i].label4->setText(disk_avail);
 
     usb[i].slice_1->setValue(static_cast<double>(bavail)/(static_cast<double>(block)));
-    usb[i].slice_1->setBrush(Qt::magenta);
     usb[i].slice_2->setValue((1 - static_cast<double>(bavail)/static_cast<double>(block)));
-    usb[i].slice_2->setBrush(Qt::blue);
 
     qInfo("draw usb %d pie", i);
 
@@ -117,7 +118,6 @@ void MainWindow::showLocalStorage()
     if(0 != statfs("/usb_copy_dir", &s))
         return;
 
-
     human_size(s.f_blocks * s.f_bsize, disk_size);
     human_size(s.f_blocks * s.f_bsize - s.f_bfree * s.f_bsize, disk_avail);
 
@@ -125,9 +125,7 @@ void MainWindow::showLocalStorage()
     local.label4->setText(disk_avail);
 
     local.slice_1->setValue(static_cast<double>(s.f_bfree)/(static_cast<double>(s.f_blocks)));
-    local.slice_1->setBrush(Qt::magenta);
-    local.slice_2->setValue((1-  static_cast<double>(s.f_bfree)/static_cast<double>(s.f_blocks)));
-    local.slice_2->setBrush(Qt::blue);
+    local.slice_2->setValue((1 - static_cast<double>(s.f_bfree)/static_cast<double>(s.f_blocks)));
 }
 
 void MainWindow::emitToFtpTranslation()
@@ -392,6 +390,7 @@ QGroupBox* MainWindow::groupBox(int i)
 
     return nullptr;
 }
+#if 0
 void MainWindow::drawPieChartInit()
 {
     int i;
@@ -524,4 +523,215 @@ void MainWindow::drawPieChartInit()
 
         usb[i].verticalLayout_1->addLayout(usb[i].horizontalLayout_2);
     }
+}
+#endif
+void MainWindow::drawPieChartInit()
+{
+    int i;
+    QGroupBox *tmpGroup = nullptr;
+
+    local.slice_1 = new QPieSlice(QStringLiteral("free"), 1, this);
+    local.slice_2 = new QPieSlice(QStringLiteral("used"), 0, this);
+
+    local.series = new QPieSeries(ui->groupBox_17);
+    local.series->setHoleSize(0.35);
+    local.series->append(local.slice_1);
+    local.series->append(local.slice_2);
+
+    local.chartview = new QChartView(ui->groupBox_17);
+    local.chartview->setRenderHint(QPainter::Antialiasing);
+ //   local.chartview->chart()->setTitle("DonutChart Example");
+    local.chartview->chart()->addSeries(local.series);
+    local.chartview->chart()->legend()->setAlignment(Qt::AlignBottom);
+    local.chartview->chart()->setTheme(QChart::ChartThemeLight);
+    local.chartview->chart()->legend()->setFont(QFont("Arial",7));
+
+    local.verticalLayout_local = new QVBoxLayout(ui->groupBox_17);
+    local.verticalLayout_local->setSpacing(0);
+    local.verticalLayout_local->setContentsMargins(0, 0, 0, 0);
+    local.verticalLayout_local->addWidget(local.chartview);
+
+
+    local.label1 = new QLabel(ui->groupBox_17);
+    local.label1->setText(QApplication::translate("MainWindow", "总容量:", Q_NULLPTR));
+
+    local.label2 = new QLabel(ui->groupBox_17);
+    local.label2->setAlignment(Qt::AlignLeft);
+
+    local.label3 = new QLabel(ui->groupBox_17);
+    local.label3->setText(QApplication::translate("MainWindow", "已用空间:", Q_NULLPTR));
+
+    local.label4 = new QLabel(ui->groupBox_17);
+    local.label4->setAlignment(Qt::AlignLeft);
+
+    local.horizontalLayout_local = new QHBoxLayout();
+    local.horizontalLayout_local->setSpacing(2);
+    local.horizontalLayout_local->setContentsMargins(0, 0, 0, 0);
+    local.horizontalLayout_local->addWidget(local.label1);
+    local.horizontalLayout_local->addWidget(local.label2);
+   // local.horizontalSpacer_local = new QSpacerItem(10, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+ //   local.horizontalLayout_local->addItem(local.horizontalSpacer_local);
+
+    local.horizontalLayout_local->addWidget(local.label3);
+    local.horizontalLayout_local->addWidget(local.label4);
+
+    local.verticalLayout_local->addLayout(local.horizontalLayout_local);
+
+
+    for(i = 0; i < USB_MAX_NUM; i++)
+    {
+        usb[i].clearFlag  = false;
+
+        tmpGroup = groupBox(i);
+        if(tmpGroup == nullptr)
+            return;
+
+        usb[i].slice_1 = new QPieSlice(QStringLiteral("free"), 1, this);
+        usb[i].slice_2 = new QPieSlice(QStringLiteral("used"), 0, this);
+
+        usb[i].series = new QPieSeries(tmpGroup);
+        usb[i].series->setHoleSize(0.35);
+        usb[i].series->append(usb[i].slice_1);
+        usb[i].series->append(usb[i].slice_2);
+
+        usb[i].chartview = new QChartView(tmpGroup);
+        usb[i].chartview->setRenderHint(QPainter::Antialiasing);
+        //usb[i].chartview->chart()->setTitle("DonutChart Example");
+        usb[i].chartview->chart()->addSeries(usb[i].series);
+        usb[i].chartview->chart()->legend()->setAlignment(Qt::AlignBottom);
+        usb[i].chartview->chart()->setTheme(QChart::ChartThemeLight);
+        usb[i].chartview->chart()->legend()->setFont(QFont("Arial",7));
+
+        usb[i].verticalLayout_1 = new QVBoxLayout(tmpGroup);
+        usb[i].verticalLayout_1->setSpacing(0);
+        usb[i].verticalLayout_1->setContentsMargins(0, 0, 0, 0);
+        usb[i].verticalLayout_1->addWidget(usb[i].chartview);
+
+        usb[i].label1 = new QLabel(tmpGroup);
+        usb[i].label1->setText(QApplication::translate("MainWindow", "总容量:", Q_NULLPTR));
+
+        usb[i].label2 = new QLabel(tmpGroup);
+        usb[i].label2->setAlignment(Qt::AlignLeft);
+
+        usb[i].label3 = new QLabel(tmpGroup);
+        usb[i].label3->setText(QApplication::translate("MainWindow", "已用空间:", Q_NULLPTR));
+
+        usb[i].label4 = new QLabel(tmpGroup);
+        usb[i].label4->setAlignment(Qt::AlignLeft);
+
+        usb[i].horizontalLayout_1 = new QHBoxLayout();
+        usb[i].horizontalLayout_1->setSpacing(2);
+        usb[i].horizontalLayout_1->setContentsMargins(0, 0, 0, 0);
+        usb[i].horizontalLayout_1->addWidget(usb[i].label1);
+        usb[i].horizontalLayout_1->addWidget(usb[i].label2);
+       // usb[i].horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        //usb[i].horizontalLayout_1->addItem(usb[i].horizontalSpacer);
+
+        usb[i].horizontalLayout_1->addWidget(usb[i].label3);
+        usb[i].horizontalLayout_1->addWidget(usb[i].label4);
+
+       // usb[i].horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+       // usb[i].horizontalLayout_1->addItem(usb[i].horizontalSpacer_2);
+        usb[i].verticalLayout_1->addLayout(usb[i].horizontalLayout_1);
+
+        usb[i].label5 = new QLabel(tmpGroup);
+        usb[i].label5->setText(QApplication::translate("MainWindow", "速度:", Q_NULLPTR));
+        usb[i].label6 = new QLabel(tmpGroup);
+        usb[i].label6->setAlignment(Qt::AlignLeft);
+        usb[i].label6->setMinimumWidth(80);
+
+        usb[i].horizontalLayout_2 = new QHBoxLayout();
+        usb[i].horizontalLayout_2->setSpacing(2);
+        usb[i].horizontalLayout_2->setContentsMargins(0, 0, 0, 0);
+        usb[i].horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
+        usb[i].horizontalLayout_2->addWidget(usb[i].label5);
+        usb[i].horizontalLayout_2->addWidget(usb[i].label6);
+        usb[i].progressBar = new QProgressBar(tmpGroup);
+        usb[i].progressBar->setRange(0,100);
+        usb[i].horizontalLayout_2->addWidget(usb[i].progressBar);
+
+        usb[i].verticalLayout_1->addLayout(usb[i].horizontalLayout_2);
+    }
+
+#if 0
+
+    for(i = 0; i < USB_MAX_NUM; i++)
+    {
+        usb[i].clearFlag  = false;
+
+        tmpGroup = groupBox(i);
+        if(tmpGroup == nullptr)
+            return;
+
+        usb[i].slice_1 = new QPieSlice(QStringLiteral("free"), 1, this);
+        usb[i].slice_1->setBrush(Qt::darkGray);
+        usb[i].slice_2 = new QPieSlice(QStringLiteral("used"), 0, this);
+
+        // 将两个饼状分区加入series
+        usb[i].series = new QPieSeries(this);
+        usb[i].series->append(usb[i].slice_1);
+        usb[i].series->append(usb[i].slice_2);
+        usb[i].series->setPieSize(0.6);
+
+        usb[i].chart = new QChart();
+        usb[i].chart->addSeries(usb[i].series);
+
+        usb[i].chartview = new QChartView(this);
+        usb[i].chartview->show();
+        usb[i].chartview->setChart(usb[i].chart);
+        usb[i].chartview->setRenderHint(QPainter::Antialiasing);
+        usb[i].chartview->setAutoFillBackground(true);
+
+        usb[i].verticalLayout_1 = new QVBoxLayout(tmpGroup);
+        usb[i].verticalLayout_1->setSpacing(0);
+        usb[i].verticalLayout_1->setContentsMargins(0, 0, 0, 0);
+        usb[i].verticalLayout_1->addWidget(usb[i].chartview);
+
+        usb[i].label1 = new QLabel(tmpGroup);
+        usb[i].label1->setText(QApplication::translate("MainWindow", "总容量:", Q_NULLPTR));
+
+        usb[i].label2 = new QLabel(tmpGroup);
+        usb[i].label2->setAlignment(Qt::AlignLeft);
+
+        usb[i].label3 = new QLabel(tmpGroup);
+        usb[i].label3->setText(QApplication::translate("MainWindow", "已用空间:", Q_NULLPTR));
+
+        usb[i].label4 = new QLabel(tmpGroup);
+        usb[i].label4->setAlignment(Qt::AlignLeft);
+
+        usb[i].horizontalLayout_1 = new QHBoxLayout();
+        usb[i].horizontalLayout_1->setSpacing(2);
+        usb[i].horizontalLayout_1->setContentsMargins(0, 0, 0, 0);
+        usb[i].horizontalLayout_1->addWidget(usb[i].label1);
+        usb[i].horizontalLayout_1->addWidget(usb[i].label2);
+        usb[i].horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        usb[i].horizontalLayout_1->addItem(usb[i].horizontalSpacer);
+
+        usb[i].horizontalLayout_1->addWidget(usb[i].label3);
+        usb[i].horizontalLayout_1->addWidget(usb[i].label4);
+
+        usb[i].horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        usb[i].horizontalLayout_1->addItem(usb[i].horizontalSpacer_2);
+        usb[i].verticalLayout_1->addLayout(usb[i].horizontalLayout_1);
+
+        usb[i].label5 = new QLabel(tmpGroup);
+        usb[i].label5->setText(QApplication::translate("MainWindow", "速度:", Q_NULLPTR));
+        usb[i].label6 = new QLabel(tmpGroup);
+        usb[i].label6->setAlignment(Qt::AlignLeft);
+        usb[i].label6->setMinimumWidth(80);
+
+        usb[i].horizontalLayout_2 = new QHBoxLayout();
+        usb[i].horizontalLayout_2->setSpacing(2);
+        usb[i].horizontalLayout_2->setContentsMargins(0, 0, 0, 0);
+        usb[i].horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
+        usb[i].horizontalLayout_2->addWidget(usb[i].label5);
+        usb[i].horizontalLayout_2->addWidget(usb[i].label6);
+
+        usb[i].progressBar = new QProgressBar(tmpGroup);
+        usb[i].progressBar->setRange(0,100);
+        usb[i].horizontalLayout_2->addWidget(usb[i].progressBar);
+
+        usb[i].verticalLayout_1->addLayout(usb[i].horizontalLayout_2);
+    }
+#endif
 }

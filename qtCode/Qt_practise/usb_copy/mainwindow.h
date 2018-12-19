@@ -19,8 +19,10 @@ extern QSemaphore CopyThreadNum;  /*当FTP线程获取到16个CopyThreadNum信�
 extern bool ftpFlag;     /*ftpFlag 用来判断是否可以发送信号启动FTP线程*/
 extern QMutex mutex;  /*互斥信号mutex用来对全局变量ftpFlag变量进行互斥操作*/
 extern QMutex ftp_mutex; /*互斥信号ftp_mutex用来对FTP遍历线程和FTP传输线程进行互斥，只有传输完一个文件才能传输下一个文件*/
+extern QMutex copy_num_mutex;
 extern char path_from_full[MAX_PATH_LENGTH];/*标识FTP传输文件目录*/
 extern char *path[8];/*复制目录*/
+extern unsigned int dir_writting_num[8];
 extern sum_t ftp_sum;
 extern copied_t ftp_transmission;
 extern time_t ftp_transmission_start_time;

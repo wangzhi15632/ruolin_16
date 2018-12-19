@@ -7,13 +7,13 @@
 CopyThread::CopyThread()
 {
     rcvFlag = false;
-    transcodingFlag = true; //默认进行转码
+    transcodingFlag = true; //默认不进行转码
 }
 
 void CopyThread::test()
 {
     qDebug("end!!!! num:%d", this->num);
-    qDebug() << "copy thread" << currentThread();
+    qDebug() << "copy thread" << currentThreadId();
     qDebug() << "this:"<< this;
 }
 
@@ -26,7 +26,7 @@ void CopyThread::cp_dir(char *mountPoint)
 void CopyThread::run()
 {
     CopyThreadNum.acquire();
-
+qDebug() << "run" << currentThreadId();
     if(rcvFlag)
     {
         struct statfs s;
@@ -45,6 +45,8 @@ void CopyThread::run()
         }
 
         emit(sendUDevInfo(num, s.f_blocks, s.f_bsize, s.f_bfree));
+
+        usb_size = s.f_bfree * s.f_bsize;
 
         cp_task(mountDir);
     }
