@@ -1,41 +1,39 @@
 #ifndef LIB_STORAGE_H
 #define LIB_STORAGE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#define STORAGE_EXPORT 
+#define STORAGE_PARSE_VERSION "V1.1.4"
 
-#define STORAGE_EXPORT
-#define STORAGE_PARSE_VERSION "V1.1.0"
 /*文件类型枚举*/
 typedef enum
 {
-    RECORD_TYPE_NORMAL = 0,     /*普通录像*/
-    RECORD_TYPE_EVENT,          /*事件录像*/
-    RECORD_TYPE_PICTURE,        /*图片*/
-    RECORD_TYPE_AUDIO,          /*录音*/
-    RECORD_TYPE_SMART_PICTURE,  /*智能抓图*/
+    RECORD_TYPE_NORMAL = 0,     /*普通录像*/     
+    RECORD_TYPE_EVENT,          /*事件录像*/ 
+    RECORD_TYPE_PICTURE,        /*图片*/ 
+    RECORD_TYPE_AUDIO,          /*录音*/ 
+    RECORD_TYPE_SMART_PICTURE,  /*智能抓图*/ 
     RECORD_TYPE_NUM
 }RECORD_TYPE_E;
 
 /*[类型-通道]映射(40 bytes)*/
-typedef struct
+typedef struct 
 {
-        char sTypeName[32];     /*类型名称*/
-        unsigned int StartChan; /*起始通道*/
-        unsigned int EndChan;   /*结束通道*/
+	char sTypeName[32];     /*类型名称*/  
+	unsigned int StartChan; /*起始通道*/
+	unsigned int EndChan;   /*结束通道*/
 }TYPE_CHAN_MAP_T;
 
-/*文件搜索参数(28 bytes)*/
+/*文件搜索参数(32 bytes)*/
 typedef struct
 {
-        unsigned int uOrder;     /*搜索顺序(0正序,非0倒序)*/
-        unsigned int uMaxNum;    /*搜索数量上限(默认搜索全部)*/
-        int iChan;               /*搜索通道*/
-        int iType;               /*搜索类型*/
-        int iSubType;            /*搜索子类型*/
-        unsigned int uStartTime; /*搜索起始时间*/
-        unsigned int uEndTime;   /*搜索结束时间*/
+    unsigned int uMediaNo;   /*搜索介质号(范围[0,99])*/ 
+	unsigned int uOrder;     /*搜索顺序(0正序,非0倒序)*/ 
+	unsigned int uMaxNum;    /*搜索数量上限(默认搜索全部)*/ 
+	int iChan;               /*搜索通道*/ 
+	int iType;               /*搜索类型*/ 	
+	int iSubType;            /*搜索子类型*/
+	unsigned int uStartTime; /*搜索起始时间*/
+	unsigned int uEndTime;   /*搜索结束时间*/
 }RECORD_SEARCH_PARAM_T;
 
 /*文件信息(88 bytes)*/
@@ -77,8 +75,12 @@ typedef struct
     unsigned char uValid;         /* GPS信息是否有效*/
     unsigned char uLongitudeType; /* E/W(东经/西经);*/
     unsigned char uLatitudeType;  /* S/N(南纬/北纬)*/
-        unsigned char uRes;
+	unsigned char uRes;
 }GPS_INFO_T;
+
+#if defined( __cplusplus )
+extern "C" {
+#endif
 
 /* @brief   获取版本
  * @param   pBuf      版本缓存指针
@@ -88,21 +90,25 @@ typedef struct
 STORAGE_EXPORT void storage_version(char *pBuf, unsigned int uBufSize);
 
 /* @brief   初始化
- * @param   pPath  存储器路径
- * @return  成功返回0,失败返回-1
+ * @param   pPath  存储介质路径
+ * @return  成功返回存储介质号[0,99],失败返回-1
+ * @note    支持同时访问多个存储介质(每调用一次该函数，增加一个存储介质路径，并返回对应的存储介质号)
+ *          在调用storage_record_list_create进行搜索时，需要对RECORD_SEARCH_PARAM_T中的uMediaNo赋值为该函数返回的存储介质号
  */
 STORAGE_EXPORT int storage_init(const char *pPath);
 
 /* @brief   获取类型通道映射
+ * @param   uMediaNo     存储介质号[0,99]
  * @param   pMap         类型通道映射指针
  * @param   uMaxTypeNum  类型最大支持数量
  * @return  成功返回类型实际数量,失败返回-1
  */
-STORAGE_EXPORT int storage_type_chan_map_get(TYPE_CHAN_MAP_T *pMap, unsigned int uMaxTypeNum);
+int storage_type_chan_map_get(unsigned int uMediaNo, TYPE_CHAN_MAP_T *pMap, unsigned int uMaxTypeNum);
 
 /* @brief   创建文件搜索链表
  * @param   pSearchParam  文件搜索参数指针
  * @return  成功返回文件搜索链表句柄,失败返回NULL
+ * @note    需要正确赋值RECORD_SEARCH_PARAM_T中的各项参数
  */
 STORAGE_EXPORT void *storage_record_list_create(RECORD_SEARCH_PARAM_T *pSearchParam);
 
@@ -177,7 +183,15 @@ STORAGE_EXPORT int storage_record_dev_info_get(const char *pName, DEV_INFO_T *pD
  */
 STORAGE_EXPORT int storage_record_gps_info_get(const char *pName, GPS_INFO_T *pGpsInfo, unsigned int uMaxNum, unsigned int *pRealNum);
 
-#ifdef __cplusplus
+/* @brief   清空索引
+ * @param   pPath  存储介质路径
+ * @return  成功返回0,失败返回-1
+ * @note    
+ */
+STORAGE_EXPORT int storage_clear(const char *pPath);
+
+#if defined( __cplusplus )
 }
 #endif
+
 #endif

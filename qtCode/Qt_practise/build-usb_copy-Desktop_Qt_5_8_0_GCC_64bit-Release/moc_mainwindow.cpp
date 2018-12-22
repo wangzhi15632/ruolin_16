@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_MainWindow_t {
-    QByteArrayData data[19];
-    char stringdata0[212];
+    QByteArrayData data[21];
+    char stringdata0[249];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -35,29 +35,32 @@ QT_MOC_LITERAL(0, 0, 10), // "MainWindow"
 QT_MOC_LITERAL(1, 11, 19), // "starFtpTransmission"
 QT_MOC_LITERAL(2, 31, 0), // ""
 QT_MOC_LITERAL(3, 32, 8), // "slotShow"
-QT_MOC_LITERAL(4, 41, 12), // "slotProgress"
-QT_MOC_LITERAL(5, 54, 5), // "sum_t"
-QT_MOC_LITERAL(6, 60, 8), // "copied_t"
-QT_MOC_LITERAL(7, 69, 6), // "time_t"
-QT_MOC_LITERAL(8, 76, 12), // "slotCloseDev"
-QT_MOC_LITERAL(9, 89, 3), // "num"
-QT_MOC_LITERAL(10, 93, 11), // "slotFindDev"
-QT_MOC_LITERAL(11, 105, 5), // "char*"
-QT_MOC_LITERAL(12, 111, 10), // "mountPoint"
-QT_MOC_LITERAL(13, 122, 16), // "showLocalStorage"
-QT_MOC_LITERAL(14, 139, 20), // "emitToFtpTranslation"
-QT_MOC_LITERAL(15, 160, 11), // "starFtpTime"
-QT_MOC_LITERAL(16, 172, 17), // "updateFtpProgress"
-QT_MOC_LITERAL(17, 190, 16), // "ftpCfgBtnClicked"
-QT_MOC_LITERAL(18, 207, 4) // "test"
+QT_MOC_LITERAL(4, 41, 19), // "slotShowTranscoding"
+QT_MOC_LITERAL(5, 61, 12), // "slotProgress"
+QT_MOC_LITERAL(6, 74, 5), // "sum_t"
+QT_MOC_LITERAL(7, 80, 8), // "copied_t"
+QT_MOC_LITERAL(8, 89, 6), // "time_t"
+QT_MOC_LITERAL(9, 96, 12), // "slotCloseDev"
+QT_MOC_LITERAL(10, 109, 3), // "num"
+QT_MOC_LITERAL(11, 113, 11), // "slotFindDev"
+QT_MOC_LITERAL(12, 125, 5), // "char*"
+QT_MOC_LITERAL(13, 131, 10), // "mountPoint"
+QT_MOC_LITERAL(14, 142, 16), // "showLocalStorage"
+QT_MOC_LITERAL(15, 159, 20), // "emitToFtpTranslation"
+QT_MOC_LITERAL(16, 180, 11), // "starFtpTime"
+QT_MOC_LITERAL(17, 192, 17), // "updateFtpProgress"
+QT_MOC_LITERAL(18, 210, 16), // "ftpCfgBtnClicked"
+QT_MOC_LITERAL(19, 227, 16), // "usbFmtActClicked"
+QT_MOC_LITERAL(20, 244, 4) // "test"
 
     },
     "MainWindow\0starFtpTransmission\0\0"
-    "slotShow\0slotProgress\0sum_t\0copied_t\0"
-    "time_t\0slotCloseDev\0num\0slotFindDev\0"
-    "char*\0mountPoint\0showLocalStorage\0"
-    "emitToFtpTranslation\0starFtpTime\0"
-    "updateFtpProgress\0ftpCfgBtnClicked\0"
+    "slotShow\0slotShowTranscoding\0slotProgress\0"
+    "sum_t\0copied_t\0time_t\0slotCloseDev\0"
+    "num\0slotFindDev\0char*\0mountPoint\0"
+    "showLocalStorage\0emitToFtpTranslation\0"
+    "starFtpTime\0updateFtpProgress\0"
+    "ftpCfgBtnClicked\0usbFmtActClicked\0"
     "test"
 };
 #undef QT_MOC_LITERAL
@@ -68,7 +71,7 @@ static const uint qt_meta_data_MainWindow[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-      11,   14, // methods
+      13,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -76,32 +79,36 @@ static const uint qt_meta_data_MainWindow[] = {
        1,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    0,   69,    2, 0x06 /* Public */,
+       1,    0,   79,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       3,    4,   70,    2, 0x08 /* Private */,
-       4,    4,   79,    2, 0x08 /* Private */,
-       8,    1,   88,    2, 0x08 /* Private */,
-      10,    1,   91,    2, 0x08 /* Private */,
-      13,    0,   94,    2, 0x08 /* Private */,
-      14,    0,   95,    2, 0x08 /* Private */,
-      15,    0,   96,    2, 0x08 /* Private */,
-      16,    4,   97,    2, 0x08 /* Private */,
-      17,    0,  106,    2, 0x08 /* Private */,
-      18,    0,  107,    2, 0x08 /* Private */,
+       3,    4,   80,    2, 0x08 /* Private */,
+       4,    2,   89,    2, 0x08 /* Private */,
+       5,    5,   94,    2, 0x08 /* Private */,
+       9,    1,  105,    2, 0x08 /* Private */,
+      11,    1,  108,    2, 0x08 /* Private */,
+      14,    0,  111,    2, 0x08 /* Private */,
+      15,    0,  112,    2, 0x08 /* Private */,
+      16,    0,  113,    2, 0x08 /* Private */,
+      17,    4,  114,    2, 0x08 /* Private */,
+      18,    0,  123,    2, 0x08 /* Private */,
+      19,    0,  124,    2, 0x08 /* Private */,
+      20,    0,  125,    2, 0x08 /* Private */,
 
  // signals: parameters
     QMetaType::Void,
 
  // slots: parameters
     QMetaType::Void, QMetaType::Int, QMetaType::ULong, QMetaType::ULong, QMetaType::ULong,    2,    2,    2,    2,
-    QMetaType::Void, QMetaType::Int, 0x80000000 | 5, 0x80000000 | 6, 0x80000000 | 7,    2,    2,    2,    2,
-    QMetaType::Void, QMetaType::Int,    9,
-    QMetaType::Void, 0x80000000 | 11,   12,
+    QMetaType::Void, QMetaType::Int, QMetaType::ULongLong,    2,    2,
+    QMetaType::Void, QMetaType::Int, 0x80000000 | 6, 0x80000000 | 7, 0x80000000 | 8, QMetaType::Bool,    2,    2,    2,    2,    2,
+    QMetaType::Void, QMetaType::Int,   10,
+    QMetaType::Void, 0x80000000 | 12,   13,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::QString, 0x80000000 | 5, 0x80000000 | 6, 0x80000000 | 7,    2,    2,    2,    2,
+    QMetaType::Void, QMetaType::QString, 0x80000000 | 6, 0x80000000 | 7, 0x80000000 | 8,    2,    2,    2,    2,
+    QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
 
@@ -116,15 +123,17 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         switch (_id) {
         case 0: _t->starFtpTransmission(); break;
         case 1: _t->slotShow((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< ulong(*)>(_a[2])),(*reinterpret_cast< ulong(*)>(_a[3])),(*reinterpret_cast< ulong(*)>(_a[4]))); break;
-        case 2: _t->slotProgress((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< sum_t(*)>(_a[2])),(*reinterpret_cast< copied_t(*)>(_a[3])),(*reinterpret_cast< time_t(*)>(_a[4]))); break;
-        case 3: _t->slotCloseDev((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 4: _t->slotFindDev((*reinterpret_cast< char*(*)>(_a[1]))); break;
-        case 5: _t->showLocalStorage(); break;
-        case 6: _t->emitToFtpTranslation(); break;
-        case 7: _t->starFtpTime(); break;
-        case 8: _t->updateFtpProgress((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< sum_t(*)>(_a[2])),(*reinterpret_cast< copied_t(*)>(_a[3])),(*reinterpret_cast< time_t(*)>(_a[4]))); break;
-        case 9: _t->ftpCfgBtnClicked(); break;
-        case 10: _t->test(); break;
+        case 2: _t->slotShowTranscoding((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< unsigned long long(*)>(_a[2]))); break;
+        case 3: _t->slotProgress((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< sum_t(*)>(_a[2])),(*reinterpret_cast< copied_t(*)>(_a[3])),(*reinterpret_cast< time_t(*)>(_a[4])),(*reinterpret_cast< bool(*)>(_a[5]))); break;
+        case 4: _t->slotCloseDev((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 5: _t->slotFindDev((*reinterpret_cast< char*(*)>(_a[1]))); break;
+        case 6: _t->showLocalStorage(); break;
+        case 7: _t->emitToFtpTranslation(); break;
+        case 8: _t->starFtpTime(); break;
+        case 9: _t->updateFtpProgress((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< sum_t(*)>(_a[2])),(*reinterpret_cast< copied_t(*)>(_a[3])),(*reinterpret_cast< time_t(*)>(_a[4]))); break;
+        case 10: _t->ftpCfgBtnClicked(); break;
+        case 11: _t->usbFmtActClicked(); break;
+        case 12: _t->test(); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -165,13 +174,13 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 11)
+        if (_id < 13)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 11;
+        _id -= 13;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 11)
+        if (_id < 13)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 11;
+        _id -= 13;
     }
     return _id;
 }

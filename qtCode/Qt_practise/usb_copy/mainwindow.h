@@ -6,12 +6,14 @@
 #include <QtCharts>
 #include <QtCharts/QPieSeries>
 #include <QtCharts/QPieSlice>
+#include "copythread.h"
 #include "usb_copy.h"
 #include "searchthread.h"
 #include "ftpthread.h"
 #include "ftp_traversing.h"
 #include <QNetworkReply>
 #include "ftpconfig.h"
+#include "usbformat.h"
 
 #define USB_MAX_NUM 16
 
@@ -26,6 +28,7 @@ extern unsigned int dir_writting_num[8];
 extern sum_t ftp_sum;
 extern copied_t ftp_transmission;
 extern time_t ftp_transmission_start_time;
+extern bool is_format_usb;
 
 typedef struct
 {
@@ -40,6 +43,7 @@ typedef struct
     QProgressBar *progressBar;
 
     bool clearFlag;
+    unsigned long long usb_sum;
 
 }usb_t;
 
@@ -90,6 +94,8 @@ private:
 
     FtpConfig *ftpCfg;
 
+    usbFormat *usbfmt;
+
 private:
     Ui::MainWindow *ui;
 
@@ -98,7 +104,8 @@ signals:
 
 private slots:
     void slotShow(int, unsigned long, unsigned long, unsigned long);/*绘画饼状图*/
-    void slotProgress(int, sum_t, copied_t, time_t);/*复制进度*/
+    void slotShowTranscoding(int, unsigned long long);
+    void slotProgress(int, sum_t, copied_t, time_t, bool);/*复制进度*/
     void slotCloseDev(int num);/*拔出一个USB设备*/
     void slotFindDev(char *mountPoint);/*插入一个USB设备*/
     void showLocalStorage();/*显示本地存储界面*/
@@ -106,6 +113,7 @@ private slots:
     void starFtpTime();/*开启定时器，进行启动FTP遍历线程倒计时*/
     void updateFtpProgress(QString, sum_t, copied_t, time_t); /*更新FTP进度条以及文本框信息*/
     void ftpCfgBtnClicked();
+    void usbFmtActClicked();
     void test();
 
 };

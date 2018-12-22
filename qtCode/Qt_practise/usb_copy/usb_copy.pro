@@ -34,7 +34,8 @@ SOURCES += \
     generatelogfile.cpp \
     ftpthread.cpp \
     ftp_traversing.cpp \
-    ftpconfig.cpp
+    ftpconfig.cpp \
+    usbformat.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -46,11 +47,13 @@ HEADERS += \
     ftpthread.h \
     ftp_traversing.h \
     ftpconfig.h \
-    lib/libstorage.h
+    lib/libstorage.h \
+    usbformat.h
 
 FORMS += \
         mainwindow.ui \
-    ftpconfig.ui
+    ftpconfig.ui \
+    usbformat.ui
 
 LIBS += -lpthread
 

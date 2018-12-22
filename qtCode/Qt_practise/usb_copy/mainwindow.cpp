@@ -17,10 +17,11 @@ char path_from_full[MAX_PATH_LENGTH];
 sum_t ftp_sum;
 copied_t ftp_transmission;
 time_t ftp_transmission_start_time;
-char *path[8] = {"/usb_copy_dir/usb_0_1", "/usb_copy_dir/usb_2_3", "/usb_copy_dir/usb_4_5", "/usb_copy_dir/usb_6_7",
+char *path[HARD_DISK_MAX_NUM] = {"/usb_copy_dir/usb_0_1", "/usb_copy_dir/usb_2_3", "/usb_copy_dir/usb_4_5", "/usb_copy_dir/usb_6_7",
                       "/usb_copy_dir/usb_8_9", "/usb_copy_dir/usb_10_11", "/usb_copy_dir/usb_12_13", "/usb_copy_dir/usb_14_15"};
 /*记录目录当前正在写入的USB设备，为了保证拷贝速率，目录正在拷贝的USB设备不能大于2*/
-unsigned int dir_writting_num[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+unsigned int dir_writting_num[HARD_DISK_MAX_NUM] = {0, 0, 0, 0, 0, 0, 0, 0};
+bool is_format_usb = true;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -61,8 +62,12 @@ void MainWindow::slotFindDev(char *mountPoint)
     qDebug() << "copyThread addr:" << copyThread;
     connect(copyThread, SIGNAL(sendUDevInfo(int, unsigned long, unsigned long, unsigned long)), this,
             SLOT(slotShow(int, unsigned long, unsigned long, unsigned long)));
+
+    connect(copyThread, SIGNAL(sendUDevInfoTranscoding(int, unsigned long long)), this,
+            SLOT(slotShowTranscoding(int, unsigned long long)));
+
     connect(copyThread, SIGNAL(sendToUI(int, sum_t, copied_t, time_t, bool)), this,
-            SLOT(slotProgress(int, sum_t, copied_t, time_t)));
+            SLOT(slotProgress(int, sum_t, copied_t, time_t, bool)));
     connect(copyThread, SIGNAL(finished()), copyThread, SLOT(deleteLater()));
     connect(copyThread, SIGNAL(finished()), copyThread, SLOT(test()));
 
@@ -75,9 +80,12 @@ void MainWindow::slotCloseDev(int num)
 {
     usb[num].clearFlag = true;
 
-    usb[num].slice_1->setValue(1);
+    usb[num].chartview->chart()->setTitleBrush(QBrush(Qt::darkGray));
+    usb[num].chartview->chart()->setTitle(tr("请插入SD卡"));
+
+    usb[num].slice_1->setValue(0);
    // usb[num].slice_1->setBrush(Qt::darkGray);
-    usb[num].slice_2->setValue(0);
+    usb[num].slice_2->setValue(1);
 
     usb[num].label2->clear();
     usb[num].label4->clear();
@@ -87,6 +95,24 @@ void MainWindow::slotCloseDev(int num)
     qInfo("close a usb dev %d", num);
 }
 
+void MainWindow::slotShowTranscoding(int i, unsigned long long size)
+{
+    char disk_avail[20];
+
+    if(size == 0)
+    {
+        usb[i].chartview->chart()->setTitle(tr("SD卡未检测到数据"));
+    }
+
+    human_size(size, disk_avail);
+
+    usb[i].label4->setText(disk_avail);
+
+    usb[i].slice_1->setValue(1 - static_cast<double>(size)/static_cast<double>(usb[i].usb_sum));
+    usb[i].slice_2->setValue(static_cast<double>(size)/static_cast<double>(usb[i].usb_sum));
+
+}
+
 void MainWindow::slotShow(int i, unsigned long block,unsigned long bsize,unsigned long bavail)
 {
     char disk_avail[20];
@@ -94,38 +120,52 @@ void MainWindow::slotShow(int i, unsigned long block,unsigned long bsize,unsigne
 
     usb[i].clearFlag = false;
 
-    human_size(block * bsize, disk_size);
-    human_size(block * bsize - bavail * bsize, disk_avail);
+    usb[i].chartview->chart()->setTitle(tr("正在拷贝,请稍候"));
+    usb[i].chartview->chart()->setTitleBrush(QBrush(Qt::blue));
+    //usb[i].chartview->chart()->setTitleFont(QFont("Arial",7));
+
+    usb[i].usb_sum = block * bsize;
+
+    human_size(usb[i].usb_sum, disk_size);
+    human_size(usb[i].usb_sum - bavail * bsize, disk_avail);
 
     usb[i].label2->setText(disk_size);
     usb[i].label4->setText(disk_avail);
 
-    usb[i].slice_1->setValue(static_cast<double>(bavail)/(static_cast<double>(block)));
-    usb[i].slice_2->setValue((1 - static_cast<double>(bavail)/static_cast<double>(block)));
+    usb[i].slice_1->setValue((1 - static_cast<double>(bavail)/static_cast<double>(block)));
+    usb[i].slice_2->setValue(static_cast<double>(bavail)/(static_cast<double>(block)));
 
     qInfo("draw usb %d pie", i);
-
 }
 /*显示为可读数字*/
 void MainWindow::showLocalStorage()
 {
-    struct statfs s;
     char disk_avail[20] = {0};
     char disk_size[20] = {0};
+    struct statfs s[HARD_DISK_MAX_NUM];
+    unsigned long long blocks = 0, free = 0;
 
-    memset(&s, 0, sizeof(struct statfs));
+    for(int num = 0; num < HARD_DISK_MAX_NUM; num++)
+    {
+        memset(&s[num], 0, sizeof(struct statfs));
 
-    if(0 != statfs("/usb_copy_dir", &s))
-        return;
+        if(0 != statfs(path[num], &s[num]))
+        {
+            continue;
+        }
 
-    human_size(s.f_blocks * s.f_bsize, disk_size);
-    human_size(s.f_blocks * s.f_bsize - s.f_bfree * s.f_bsize, disk_avail);
+        blocks += s[num].f_blocks;
+        free += s[num].f_bfree;
+    }
+
+    human_size(blocks * s[0].f_bsize, disk_size);
+    human_size((blocks - free) * s[0].f_bsize, disk_avail);
 
     local.label2->setText(disk_size);
     local.label4->setText(disk_avail);
 
-    local.slice_1->setValue(static_cast<double>(s.f_bfree)/(static_cast<double>(s.f_blocks)));
-    local.slice_2->setValue((1 - static_cast<double>(s.f_bfree)/static_cast<double>(s.f_blocks)));
+    local.slice_1->setValue((1 - static_cast<double>(free)/static_cast<double>(blocks)));
+    local.slice_2->setValue(static_cast<double>(free)/(static_cast<double>(blocks)));
 }
 
 void MainWindow::emitToFtpTranslation()
@@ -163,7 +203,7 @@ char* MainWindow::human_size(long long s, char *hs)
     return hs;
 }
 
-void MainWindow::slotProgress(int i, sum_t sum, copied_t copied, time_t copy_start_time)
+void MainWindow::slotProgress(int i, sum_t sum, copied_t copied, time_t copy_start_time, bool flag)
 {
     time_t cur_time;
     int percent;
@@ -174,31 +214,44 @@ void MainWindow::slotProgress(int i, sum_t sum, copied_t copied, time_t copy_sta
     if(usb[i].clearFlag == true)
         return;
 
-    time(&cur_time);
-    if(sum.size == 0)
+    if(flag == false)
     {
-        percent = 0;
+        time(&cur_time);
+        if(sum.size == 0)
+        {
+            percent = 0;
+        }
+        else
+        {
+            percent = static_cast<int>((copied.size * 1.0 / sum.size) * 100);
+        }
+
+        if(cur_time > copy_start_time)
+        {
+            sp = copied.size / (cur_time - copy_start_time);
+            sprintf(speed, "%s/s", human_size(sp, hs));
+        }
+        else
+        {
+            sprintf(speed, "-");
+        }
+
+        usb[i].label6->setText(speed);
+        usb[i].progressBar->setValue(percent);
+
+        if(percent == 100)
+        {
+            usb[i].chartview->chart()->setTitleBrush(QBrush(Qt::darkRed));
+            usb[i].chartview->chart()->setTitle(tr("正在格式化SD卡，请稍候"));
+        }
     }
     else
     {
-        percent = static_cast<int>((copied.size * 1.0 / sum.size) * 100);
+        usb[i].chartview->chart()->setTitleBrush(QBrush(Qt::darkRed));
+        usb[i].chartview->chart()->setTitle(tr("拷贝并格式化完成，请拔出SD卡"));
     }
-
-    if(cur_time > copy_start_time)
-    {
-        sp = copied.size / (cur_time - copy_start_time);
-        sprintf(speed, "%s/s", human_size(sp, hs));
-    }
-    else
-    {
-        sprintf(speed, "-");
-    }
-
-    usb[i].label6->setText(speed);
-    usb[i].progressBar->setValue(percent);
 
 }
-
 void MainWindow::updateFtpProgress(QString str, sum_t ftp_sum, copied_t ftp_transmissioned, time_t ftp_star_time)
 {
     time_t cur_time;
@@ -259,6 +312,14 @@ void MainWindow::ftpCfgBtnClicked()
     }
 }
 
+void MainWindow::usbFmtActClicked()
+{
+    if(QDialog::Accepted == usbfmt->exec())
+    {
+        ;
+    }
+}
+
 void MainWindow::test()
 {
     qDebug() <<"test";
@@ -266,6 +327,11 @@ void MainWindow::test()
 
 void MainWindow::init()
 {
+    QFile *file = new QFile("/media/mount_info.txt");
+    file->remove();
+    QFile *file2 = new QFile("/media/unmount_info.txt");
+    file2->remove();
+
     qDebug() << "main thread: " << QThread::currentThread();
     /*config mainWindow size and title*/
     setWindowTitle(tr("16路转储平台 V1.0"));
@@ -281,6 +347,10 @@ void MainWindow::init()
     pal.setColor(QPalette::Background, Qt::white);
     ui->centralWidget->setAutoFillBackground(true);
     ui->centralWidget->setPalette(pal);
+
+    usbfmt = new usbFormat(this);
+
+    connect(ui->action_usb_format, SIGNAL(triggered(bool)), this, SLOT(usbFmtActClicked()));
 
     /*init pie char for usb*/
     drawPieChartInit();
@@ -390,6 +460,7 @@ QGroupBox* MainWindow::groupBox(int i)
 
     return nullptr;
 }
+
 #if 0
 void MainWindow::drawPieChartInit()
 {
@@ -530,8 +601,11 @@ void MainWindow::drawPieChartInit()
     int i;
     QGroupBox *tmpGroup = nullptr;
 
-    local.slice_1 = new QPieSlice(QStringLiteral("free"), 1, this);
-    local.slice_2 = new QPieSlice(QStringLiteral("used"), 0, this);
+    local.slice_1 = new QPieSlice(QStringLiteral("used"), 0, this);
+    local.slice_2 = new QPieSlice(QStringLiteral("free"), 1, this);
+
+    //local.slice_2->setBorderColor(Qt::red);
+    local.slice_2->setColor(Qt::lightGray);
 
     local.series = new QPieSeries(ui->groupBox_17);
     local.series->setHoleSize(0.35);
@@ -586,8 +660,9 @@ void MainWindow::drawPieChartInit()
         if(tmpGroup == nullptr)
             return;
 
-        usb[i].slice_1 = new QPieSlice(QStringLiteral("free"), 1, this);
-        usb[i].slice_2 = new QPieSlice(QStringLiteral("used"), 0, this);
+        usb[i].slice_1 = new QPieSlice(QStringLiteral("used"), 0, this);
+        usb[i].slice_2 = new QPieSlice(QStringLiteral("free"), 1, this);
+        usb[i].slice_2->setColor(Qt::lightGray);
 
         usb[i].series = new QPieSeries(tmpGroup);
         usb[i].series->setHoleSize(0.35);
@@ -601,6 +676,8 @@ void MainWindow::drawPieChartInit()
         usb[i].chartview->chart()->legend()->setAlignment(Qt::AlignBottom);
         usb[i].chartview->chart()->setTheme(QChart::ChartThemeLight);
         usb[i].chartview->chart()->legend()->setFont(QFont("Arial",7));
+        usb[i].chartview->chart()->setTitleBrush(QBrush(Qt::darkGray));
+        usb[i].chartview->chart()->setTitle(tr("请插入SD卡"));
 
         usb[i].verticalLayout_1 = new QVBoxLayout(tmpGroup);
         usb[i].verticalLayout_1->setSpacing(0);

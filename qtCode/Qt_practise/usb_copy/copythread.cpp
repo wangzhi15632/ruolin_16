@@ -7,7 +7,14 @@
 CopyThread::CopyThread()
 {
     rcvFlag = false;
-    transcodingFlag = true; //默认不进行转码
+    transcodingFlag = false; //默认不进行转码
+
+    for(int x = 0; x < FILE_MAX_NUM; x++)
+    {
+        memset(file_name[x], 0, FILE_MAX_NAME);
+    }
+
+    file_num = 0;
 }
 
 void CopyThread::test()

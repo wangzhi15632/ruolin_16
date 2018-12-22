@@ -8,6 +8,7 @@
 #include <dirent.h>
 #include <pthread.h>
 #include "usb_copy.h"
+
 #include "config.h"
 #include "mainwindow.h"
 #include "searchthread.h"

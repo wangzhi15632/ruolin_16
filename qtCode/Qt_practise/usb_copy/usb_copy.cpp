@@ -313,6 +313,7 @@ int CopyThread::walk_copy(const char* path_from, const char* path_to, const char
             }
         }
     }
+
     closedir(dir);
     return ret_val;
 }
@@ -456,50 +457,45 @@ void CopyThread::is_transcoding()
     qDebug() << mountDir;
     if(-1 == stat(mountDir, &st))
     {
-        //print_message(MSGT_ERROR, "can't access \"%s\".\n", path_from_full);
+        transcodingFlag = false;
+        qCritical("transcoding dir can't get infomation");
         return;
     }
 
     /*如果是目录，则浏览目录，否则结束*/
     if(!S_ISDIR(st.st_mode))
     {
+        transcodingFlag = false;
+        qCritical("transcoding is not a dir");
         return;
     }
 
     /*打开目录*/
     if(!(dir = opendir(mountDir)))
     {
-       // print_message(MSGT_ERROR, "can't open directory \"%s\".\n", path_from_full);
+        transcodingFlag = false;
+        qCritical("transcoding dir can't open");
         return;
     }
 
     /*浏览目录*/
-    while(count < 50)
+    while((entry = readdir(dir)) != NULL)
     {
-        //int i = 0;
+        if((strcmp(".", entry->d_name) == 0 || strcmp("..", entry->d_name) == 0))
+            continue;
 
-        while((entry = readdir(dir)) != NULL)
+        if(NULL != strstr(entry->d_name, "hiv"))
         {
-            if((strcmp(".", entry->d_name) == 0 || strcmp("..", entry->d_name) == 0))
-                continue;
-
-            if(NULL == strstr(entry->d_name, "hiv"))
-            {
-                qDebug() << "not hiv" << entry->d_name;
-                num++;
-            }
-
-           // memcpy(&file_name[i][0], entry->d_name, strlen(entry->d_name));
-           // qDebug() << file_name[i];
-           // i++;
-           // file_num++;
-            count ++;
+            qDebug() << "not hiv" << entry->d_name;
+            num++;
         }
-        qDebug() << "trans end";
-    }
 
-    if(num > 30)
-        transcodingFlag = false;
+        if(num > 5)
+        {
+            transcodingFlag = true;
+            break;
+        }
+    }
 
     qDebug() << "end transcoding";
 
@@ -510,40 +506,34 @@ void CopyThread::is_transcoding()
 void CopyThread::transcoding_sum()
 {
     int iTypeNum = 0;
-    int i = 0,j = 0;
-
-    TYPE_CHAN_MAP_T stTypeChanMap[8];
-
-    RECORD_SEARCH_PARAM_T stSearchParam;
     int iType, iChan;
-
+    unsigned int iMediaNo = 0;
     void *pHandle = nullptr;
     RECORD_INFO_T stRecInfo;
-
-    for(int x = 0; x < 1000; x++)
-    {
-        memset(file_name[x], 0, 64);
-    }
-    file_num = 0;
+    TYPE_CHAN_MAP_T stTypeChanMap[8];
+    RECORD_SEARCH_PARAM_T stSearchParam;
 
     memset(&stTypeChanMap[0], 0, sizeof(TYPE_CHAN_MAP_T) * 8);
     memset(&stSearchParam, 0, sizeof(RECORD_SEARCH_PARAM_T));
     memset(&stRecInfo, 0, sizeof(RECORD_INFO_T));
 
     qDebug() << "star init";
-    if(storage_init(mountDir) != 0)
+    iMediaNo =storage_init(mountDir);
+    qDebug() << iMediaNo << mountDir;
+    if(iMediaNo < 0)
     {
         qCritical("can not init storage\n");
         return;
     }
 
-    iTypeNum = storage_type_chan_map_get(&stTypeChanMap[0], 8);
+    iTypeNum = storage_type_chan_map_get(iMediaNo, &stTypeChanMap[0], 8);
     if(iTypeNum < 0)
     {
         qCritical("storage_type_chan_map_get failed\n");
         return;
     }
 
+    stSearchParam.uMediaNo = iMediaNo;
     stSearchParam.uStartTime = 0;
     stSearchParam.uEndTime = -1;
     for(iType = 0; iType < iTypeNum; iType++)
@@ -564,12 +554,10 @@ void CopyThread::transcoding_sum()
             {
                 sum.file++;
                 sum.size += stRecInfo.uFileSize;
-                memcpy(&file_name[i][0], &stRecInfo.sName[0], strlen(&stRecInfo.sName[0]));
+                memcpy(&file_name[file_num][0], &stRecInfo.sName[0], strlen(&stRecInfo.sName[0]));
 
-                qDebug() << sum.file << file_name[i] << &stRecInfo.sName[0];
+                qDebug() << sum.file << file_name[file_num] << &stRecInfo.sName[0];
                 file_num ++;
-                i++;
-                j++;
             }
         }
 
@@ -579,6 +567,7 @@ void CopyThread::transcoding_sum()
     qDebug() <<"file " << sum.file;
 }
 
+#if 0
 void CopyThread::transcoding_copy(const char *path_to)
 {
     void *pFileHandle = nullptr;
@@ -619,18 +608,15 @@ void CopyThread::transcoding_copy(const char *path_to)
         //copy_num_mutex.lock();
         while(1)
         {
-            copy_num_mutex.lock();
             rd = storage_record_read(pFileHandle, pFileBuf, 4096);
 
             if(rd <= 0)
             {
-                fflush(pOutPutFile);
+                //fflush(pOutPutFile);
                 fclose(pOutPutFile);
                 storage_record_close(pFileHandle);
-                copy_num_mutex.unlock();
                 break;
             }
-            copy_num_mutex.unlock();
 
           //  copy_num_mutex.lock();
 
@@ -638,7 +624,6 @@ void CopyThread::transcoding_copy(const char *path_to)
          //   copy_num_mutex.unlock();
 
             copied.size += rd;
-
         }
         //copy_num_mutex.unlock();
 
@@ -650,233 +635,189 @@ void CopyThread::transcoding_copy(const char *path_to)
         copied.file++;
         emit(sendToUI(num, sum, copied, copy_start_time, false));
     }
-
 }
+#endif
+#if 1
+void CopyThread::transcoding_copy(const char *path_to)
+{
+    size_t rd, wr, swr;
+    FILE *pOutPutFile;
+    DEV_INFO_T stDevInfo;
+    file_name_t file_new_name;
+    char *ret = nullptr;
+    void *pFileHandle = nullptr;
+    unsigned char pFileBuf[COPY_BUF_SIZE] = {0};
+    char fileName[100] = {0};
+    char outPutFileName[100] = {0};
+    char firstOutPutDir[100] = {0};
+    char secondOutPutDir[100] = {0};
 
-//void CopyThread::transcoding_copy(const char *path_to)
-//{
-//    int iTypeNum = 0;
-//    TYPE_CHAN_MAP_T stTypeChanMap[8];
+    memset(&stDevInfo, 0, sizeof(DEV_INFO_T));
 
-//    RECORD_SEARCH_PARAM_T stSearchParam;
-//    int iType, iChan;
+    for(int file = 0; file < file_num; file++)
+    {
+        if(storage_record_dev_info_get(&file_name[file][0], &stDevInfo) != 0)
+        {
+            qCritical("storage_record_dev_info_get failed:%s", &file_name[file][0]);
+            continue;
+        }
 
-//    void *pHandle = nullptr;
-//    RECORD_INFO_T stRecInfo;
+        pFileHandle = storage_record_open(&file_name[file][0]);
+        if(pFileHandle == NULL)
+        {
+            qCritical("storage_record_open faile:%s", &file_name[file][0]);
+            continue;
+        }
 
-//    DEV_INFO_T stDevInfo;
-//    void *pFileHandle = nullptr;
+        memcpy(&file_new_name.sCarriageNum[0], &stDevInfo.sCarriageNum[0], strlen(stDevInfo.sCarriageNum));
+        memcpy(&file_new_name.sTrainNum[0], &stDevInfo.sTrainNum[0], strlen(stDevInfo.sTrainNum));
+        memcpy(&file_new_name.sDriverNum[0], &stDevInfo.sDriverNum[0], strlen(stDevInfo.sDriverNum));
+        memcpy(&file_new_name.sYear[0], &file_name[file][5], 4);
+        memcpy(&file_new_name.sMonth[0], &file_name[file][9], 2);
+        memcpy(&file_new_name.sDay[0], &file_name[file][11], 2);
+        memcpy(&file_new_name.sHour[0], &file_name[file][14], 2);
+        memcpy(&file_new_name.sMinutes[0], &file_name[file][16], 2);
+        memcpy(&file_new_name.sSeconds[0], &file_name[file][18], 2);
 
-//    file_name_t file_name;
-//    char outPutFileName[100] = {0};
-//    FILE *pOutPutFile;
-//    char fileName[100] = {0};
-//    unsigned char *pFileBuf;
-//    size_t rd, wr, swr;
-//    char *ret = nullptr;
+        if(strlen(file_new_name.sCarriageNum) == 0)
+        {
+            if(strlen(file_new_name.sDriverNum) == 0)
+            {
+                sprintf(fileName, "%s_%s-%s-%s_%s-%s-%s", &file_new_name.sTrainNum[0], &file_new_name.sYear[0],
+                    &file_new_name.sMonth[0], &file_new_name.sDay[0], &file_new_name.sHour[0], &file_new_name.sMinutes[0],
+                    &file_new_name.sSeconds[0]);
+            }
+            else
+            {
+                sprintf(fileName, "%s_%s_%s-%s-%s_%s-%s-%s", &file_new_name.sTrainNum[0], &file_new_name.sDriverNum[0],&file_new_name.sYear[0],
+                    &file_new_name.sMonth[0], &file_new_name.sDay[0], &file_new_name.sHour[0], &file_new_name.sMinutes[0],
+                    &file_new_name.sSeconds[0]);
+            }
+        }
+        else
+        {
+            if(strlen(file_new_name.sDriverNum) == 0)
+            {
+                sprintf(fileName, "%s_%s_%s-%s-%s_%s-%s-%s", &file_new_name.sCarriageNum[0],
+                        &file_new_name.sTrainNum[0], &file_new_name.sYear[0],&file_new_name.sMonth[0],
+                        &file_new_name.sDay[0], &file_new_name.sHour[0], &file_new_name.sMinutes[0],
+                    &file_new_name.sSeconds[0]);
+            }
+            else
+            {
+                sprintf(fileName, "%s_%s_%s_%s-%s-%s_%s-%s-%s", &file_new_name.sCarriageNum[0],
+                        &file_new_name.sTrainNum[0],&file_new_name.sDriverNum[0],&file_new_name.sYear[0],
+                    &file_new_name.sMonth[0], &file_new_name.sDay[0], &file_new_name.sHour[0],
+                        &file_new_name.sMinutes[0],&file_new_name.sSeconds[0]);
+            }
+        }
+        ret = strchr(&file_name[file][0], '.');
 
-//    char firstOutPutDir[100] = {0};
-//    char secondOutPutDir[100] = {0};
+        sprintf(firstOutPutDir, "%s/%s_%s_%s", path_to, file_new_name.sCarriageNum, file_new_name.sTrainNum, file_new_name.sDriverNum);
 
-//    memset(&file_name, 0, sizeof(file_name_t));
-//    memset(&stTypeChanMap[0], 0, sizeof(TYPE_CHAN_MAP_T) * 8);
-//    memset(&stSearchParam, 0, sizeof(RECORD_SEARCH_PARAM_T));
-//    memset(&stRecInfo, 0, sizeof(RECORD_INFO_T));
-//    memset(&stDevInfo, 0, sizeof(DEV_INFO_T));
+        if(access(firstOutPutDir, NULL) != 0)
+        {
+            mkdir(firstOutPutDir, 0777);
+        }
 
-//    iTypeNum = storage_type_chan_map_get(&stTypeChanMap[0], 8);
-//    if(iTypeNum < 0)
-//    {
-//        qCritical("storage_type_chan_map_get failed\n");
-//        return;
-//    }
+        sprintf(secondOutPutDir, "%s/%s%s%s", firstOutPutDir,file_new_name.sYear, file_new_name.sMonth, file_new_name.sDay);
+        if(access(secondOutPutDir, NULL) != 0)
+        {
+            mkdir(secondOutPutDir, 0777);
+        }
 
-//    stSearchParam.uStartTime = 0;
-//    stSearchParam.uEndTime = -1;
+        sprintf(outPutFileName, "%s/%s%s", secondOutPutDir, fileName, ret);
 
-//    for(iType = 0; iType < iTypeNum; iType++)
-//    {
-//        for(iChan = (int)stTypeChanMap[iType].StartChan; iChan <= (int)stTypeChanMap[iType].EndChan; iChan++)
-//        {
-//            stSearchParam.iType = iType;
-//            stSearchParam.iChan = iChan;
-//            pHandle = storage_record_list_create(&stSearchParam);
-//            if(pHandle == NULL)
-//            {
-//                qCritical("storage_record_list_create failed\n");
-//                continue;
-//            }
+        qDebug() << "file" << outPutFileName;
+        pOutPutFile = fopen(outPutFileName, "wb");
+        if(pOutPutFile == NULL)
+        {
+            qCritical("create output file failed, path:%s", outPutFileName);
+            storage_record_close(pFileHandle);
+            continue;
+        }
 
-//            while(storage_record_list_dequeue(pHandle, &stRecInfo) == 0)
-//            {
-//                //if(storage_record_dev_info_get(&stRecInfo.sName[0], &stDevInfo) != 0)
-//               // {
-//               //     qCritical("storage_record_dev_info_get failed:%s", stRecInfo.sName);
-//              //      continue;
-//              //  }
+        while((rd = storage_record_read(pFileHandle, pFileBuf, COPY_BUF_SIZE)) > 0)
+        {
+            wr = 0;
+            do
+            {
+                swr = fwrite(pFileBuf + wr, 1, rd - wr, pOutPutFile);
+                wr += swr;
+            }
+            while(swr > 0 && wr < rd);
+            copied.size += rd;
 
-//                pFileHandle = storage_record_open(&stRecInfo.sName[0]);
-//                if(pFileHandle == NULL)
-//                {
-//                    qCritical("storage_record_open faile:%s", stRecInfo.sName);
-//                    continue;
-//                }
+            if(wr != rd)
+            {
+                /*只有部分文件被复制也视为成功因为文件系统中已经有这个文件的记录了*/
+                qCritical("write file error %s.\n", outPutFileName);
+                break;
+            }
+        }
 
-//#if 0
-//                memcpy(&file_name.sCarriageNum[0], &stDevInfo.sCarriageNum[0], strlen(stDevInfo.sCarriageNum));
-//                memcpy(&file_name.sTrainNum[0], &stDevInfo.sTrainNum[0], strlen(stDevInfo.sTrainNum));
-//                memcpy(&file_name.sDriverNum[0], &stDevInfo.sDriverNum[0], strlen(stDevInfo.sDriverNum));
-//                memcpy(&file_name.sYear[0], &stRecInfo.sName[5], 4);
-//                memcpy(&file_name.sMonth[0], &stRecInfo.sName[9], 2);
-//                memcpy(&file_name.sDay[0], &stRecInfo.sName[11], 2);
-//                memcpy(&file_name.sHour[0], &stRecInfo.sName[14], 2);
-//                memcpy(&file_name.sMinutes[0], &stRecInfo.sName[16], 2);
-//                memcpy(&file_name.sSeconds[0], &stRecInfo.sName[18], 2);
-
-//                if(strlen(file_name.sCarriageNum) == 0)
-//                {
-//                    if(strlen(file_name.sDriverNum) == 0)
-//                    {
-//                        sprintf(fileName, "%s_%s-%s-%s_%s-%s-%s", &file_name.sTrainNum[0], &file_name.sYear[0],
-//                            &file_name.sMonth[0], &file_name.sDay[0], &file_name.sHour[0], &file_name.sMinutes[0],
-//                            &file_name.sSeconds[0]);
-//                    }
-//                    else
-//                    {
-//                        sprintf(fileName, "%s_%s_%s-%s-%s_%s-%s-%s", &file_name.sTrainNum[0], &file_name.sDriverNum[0],&file_name.sYear[0],
-//                            &file_name.sMonth[0], &file_name.sDay[0], &file_name.sHour[0], &file_name.sMinutes[0],
-//                            &file_name.sSeconds[0]);
-//                    }
-//                }
-//                else
-//                {
-//                    if(strlen(file_name.sDriverNum) == 0)
-//                    {
-//                        sprintf(fileName, "%s_%s_%s-%s-%s_%s-%s-%s", &file_name.sCarriageNum[0],
-//                                &file_name.sTrainNum[0], &file_name.sYear[0],&file_name.sMonth[0],
-//                                &file_name.sDay[0], &file_name.sHour[0], &file_name.sMinutes[0],
-//                            &file_name.sSeconds[0]);
-//                    }
-//                    else
-//                    {
-//                        sprintf(fileName, "%s_%s_%s_%s-%s-%s_%s-%s-%s", &file_name.sCarriageNum[0],
-//                                &file_name.sTrainNum[0],&file_name.sDriverNum[0],&file_name.sYear[0],
-//                            &file_name.sMonth[0], &file_name.sDay[0], &file_name.sHour[0],
-//                                &file_name.sMinutes[0],&file_name.sSeconds[0]);
-//                    }
-//                }
-//                ret = strchr(&stRecInfo.sName[0], '.');
-
-//                sprintf(firstOutPutDir, "%s/%s_%s_%s", path_to, file_name.sCarriageNum, file_name.sTrainNum, file_name.sDriverNum);
-
-//                if(access(firstOutPutDir, NULL) != 0)
-//                {
-//                    mkdir(firstOutPutDir, 0777);
-//                }
-
-//                sprintf(secondOutPutDir, "%s/%s%s%s", firstOutPutDir,file_name.sYear, file_name.sMonth, file_name.sDay);
-//                if(access(secondOutPutDir, NULL) != 0)
-//                {
-//                    mkdir(secondOutPutDir, 0777);
-//                }
-//#endif
-
-//                //sprintf(outPutFileName, "%s/%s%s", secondOutPutDir, fileName, ret);
-//                sprintf(outPutFileName, "%s/%s", path_to, stRecInfo.sName);
-
-//                qDebug() << "file" << outPutFileName;
-//                pOutPutFile = fopen(outPutFileName, "wb");
-//                if(pOutPutFile == NULL)
-//                {
-//                    qCritical("create output file failed, path:%s", outPutFileName);
-//                    storage_record_close(pFileHandle);
-//                    continue;
-//                }
-
-//                pFileBuf = (unsigned char *)malloc(1024*256);
-//                while((rd = storage_record_read(pFileHandle, pFileBuf, 1024 *256)) > 0)
-//                {
-//                   // qDebug() << stRecInfo.sName;
-//                    wr = 0;
-//                   // do
-//                    {
-//                        swr = fwrite(pFileBuf + wr, 1, rd - wr, pOutPutFile);
-//                        wr += swr;
-//                    }
-//                   // while(swr > 0 && wr < rd);
-//                    copied.size += rd;
-
-//                    if(wr != rd)
-//                    {
-//                        /*只有部分文件被复制也视为成功因为文件系统中已经有这个文件的记录了*/
-//                        qCritical("write file error %s.\n", outPutFileName);
-//                        break;
-//                    }
-//                }
-//                free(pFileBuf);
-//                qDebug() << "coped one";
-//                fclose(pOutPutFile);
-//                storage_record_close(pFileHandle);
-//                copied.file++;
-//                emit(sendToUI(num, sum, copied, copy_start_time, false));
-//            }
-//        }
-
-//        storage_record_list_release(pHandle);
-//    }
-//}
-
+        qDebug() << "coped one";
+        fclose(pOutPutFile);
+        storage_record_close(pFileHandle);
+        copied.file++;
+        emit(sendToUI(num, sum, copied, copy_start_time, false));
+    }
+}
+#endif
 int CopyThread::search_dir_to_write(char *dir, unsigned int i)
 {
+    unsigned int hard_disk_num = 0;
     unsigned int count = 0;
-    unsigned int j = 0;
     char *write_dir = nullptr;
 
-    j = i;
+    hard_disk_num = i;
     write_dir = dir;
-    while(count < 8)
+
+    /*search dir to write*/
+    while(count < HARD_DISK_MAX_NUM)
     {
-        if(is_dir_writting_num(j))
+        if(is_dir_writting_num(hard_disk_num) == false)
         {
-            if(is_dir_larger(write_dir))
+            if(is_dir_larger(write_dir) == true)
             {
-                return i;
+                return hard_disk_num;
             }
         }
 
         count++;
-        j++;
-        if(j > 7)
+        hard_disk_num++;
+        if(hard_disk_num >= HARD_DISK_MAX_NUM)
         {
-            j = 0;
+            hard_disk_num = 0;
         }
 
-        write_dir = path[j];
+        write_dir = path[hard_disk_num];
     }
 
-    j = i;
+    hard_disk_num = i;
     count = 0;
     write_dir = dir;
 
+    /*search dir to delete*/
     while(1)
     {
-        if(is_dir_writting_num(j))
+        if(is_dir_writting_num(hard_disk_num) == false)
         {
             dir_full_and_delete(write_dir, nullptr);
 
             if(is_dir_larger(write_dir))
             {
-                return j;
+                return hard_disk_num;
             }
         }
 
-        j++;
-        if(j > 7)
+        hard_disk_num++;
+        if(hard_disk_num >= HARD_DISK_MAX_NUM)
         {
-            j = 0;
+            hard_disk_num = 0;
         }
 
-        write_dir = path[j];
+        write_dir = path[hard_disk_num];
     }
 
     return -1;
@@ -896,7 +837,7 @@ int CopyThread::delete_min_time_dir(char *dir_del)
     /*打开目录*/
     if(!(dir = opendir(dir_del)))
     {
-       // print_message(MSGT_ERROR, "can't open directory \"%s\".\n", path_from_full);
+        qCritical("can't get %s information function:%s", path_from_full, __FUNCTION__);
         return OPP_SKIP;
     }
 
@@ -925,12 +866,13 @@ int CopyThread::delete_min_time_dir(char *dir_del)
     // 参数传递进来的目录不存在，直接返回
     if (0 != access(path_from_full, F_OK))
     {
+        qCritical("can't access:%s function:%s", path_from_full, __FUNCTION__);
         return OPP_SKIP;
     }
     // 获取目录属性失败，返回错误
     if(0 > stat(path_from_full, &st))
     {
-        qCritical("get directory stat error");
+        qCritical("get directory:%s stat error function:%s", path_from_full, __FUNCTION__);
         return OPP_SKIP;
     }
 
@@ -938,10 +880,10 @@ int CopyThread::delete_min_time_dir(char *dir_del)
     {
         // 普通文件直接删除
         remove(path_from_full);
+        return OPP_CONTINUE;
     }
     else if(S_ISDIR(st.st_mode))
     {
-        // 目录文件，递归删除目录中内容
         dir = opendir(path_from_full);
         while((entry = readdir(dir)) != NULL)
         {
@@ -962,6 +904,7 @@ int CopyThread::delete_min_time_dir(char *dir_del)
     else
     {
         qCritical("unknow file type!");
+        return OPP_SKIP;
     }
 
     return OPP_CONTINUE;
@@ -974,26 +917,26 @@ void CopyThread::dir_full_and_delete(char *dir_from, char *dir_tree)
     struct dirent *entry = nullptr;
     char path_tree_new[MAX_PATH_LENGTH];
     char path_from_full[MAX_PATH_LENGTH];
-    int ret_val = OPP_CONTINUE;
 
     /*获得源的属性*/
     make_path(path_from_full, dir_from, dir_tree);
     if(-1 == stat(path_from_full, &st))
     {
-        //print_message(MSGT_ERROR, "can't access \"%s\".\n", path_from_full);
+        qCritical("can't get %s information function:%s", path_from_full, __FUNCTION__);
         return;
     }
 
     /*如果是目录，则浏览目录，否则结束*/
     if(!S_ISDIR(st.st_mode))
     {
+        qCritical("must delete dir function:%s", __FUNCTION__);
         return;
     }
 
     /*打开目录*/
     if(!(dir = opendir(path_from_full)))
     {
-       // print_message(MSGT_ERROR, "can't open directory \"%s\".\n", path_from_full);
+        qCritical("can't open dir:%s function:%s", path_from_full, __FUNCTION__);
         return;
     }
 
@@ -1007,7 +950,7 @@ void CopyThread::dir_full_and_delete(char *dir_from, char *dir_tree)
         /*无法访问 skip*/
         if(-1 == stat(path_from_full, &st))
         {
-            qDebug("skip, can't access %s\"\".\n", path_from_full);
+            qDebug("skip, can't access %s function:%s\"\".\n", path_from_full, __FUNCTION__);
             continue;
         }
         /* 忽略 . 和 .. */
@@ -1018,18 +961,15 @@ void CopyThread::dir_full_and_delete(char *dir_from, char *dir_tree)
 
         if(S_ISDIR(st.st_mode))
         {
-            /*递归处理子目录*/
-            if(delete_min_time_dir(path_from_full) == OPP_CANCEL)
+            if(delete_min_time_dir(path_from_full) == OPP_CONTINUE)
             {
-                ret_val = OPP_CANCEL;
-                break;
+               return;
             }
         }
         else
         {
             qCritical("is not a dir");
-            ret_val = OPP_SKIP;
-            break;
+            continue;
         }
     }
 
@@ -1041,11 +981,11 @@ bool CopyThread::is_dir_writting_num(unsigned int i)
 {
     if(dir_writting_num[i] >= 2)
     {
-        return false;
+        return true;
     }
     else
     {
-        return true;
+        return false;
     }
 }
 
@@ -1134,10 +1074,10 @@ int CopyThread::cp_task(char *dir)
     }
     else
     {
-       // copy_num_mutex.lock();
+        copy_num_mutex.lock();
         dir_writting_num[i]++;
         path_to = path[i];
-      //  copy_num_mutex.unlock();
+        copy_num_mutex.unlock();
     }
 
     qDebug() << "end search";
@@ -1157,7 +1097,18 @@ int CopyThread::cp_task(char *dir)
     if(transcodingFlag == true)
     {
         transcoding_sum();
+        if(sum.file == 0 && sum.dir == 0)
+        {
+            sendUDevInfoTranscoding(num, sum.size);
+            qInfo("transcoding sum nothing found.\n");
+            return -1;
+        }
+        sendUDevInfoTranscoding(num, sum.size);
+
         transcoding_copy(path_to);
+
+        emit(sendToUI(num, sum, copied, copy_start_time, true));
+        storage_clear(mountDir);
     }
     else
     {
@@ -1165,6 +1116,7 @@ int CopyThread::cp_task(char *dir)
         if(sum.file == 0 && sum.dir == 0)
         {
             qInfo("nothing found.\n");
+            return -1;
         }
         else
         {
@@ -1207,9 +1159,9 @@ int CopyThread::cp_task(char *dir)
             walk_copy(path_from, path_to, nullptr);
         }
     }
-   // copy_num_mutex.lock();
+    copy_num_mutex.lock();
     dir_writting_num[i]--;
-  //  copy_num_mutex.unlock();
+    copy_num_mutex.unlock();
 
     return 0;
 }  

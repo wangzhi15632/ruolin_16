@@ -242,9 +242,16 @@
      <x>0</x>
      <y>0</y>
      <width>1548</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>设置</string>
+    </property>
+    <addaction name="action_usb_format"/>
+   </widget>
+   <addaction name="menu"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -266,6 +273,16 @@
     <bool>false</bool>
    </attribute>
   </widget>
+  <action name="action_2">
+   <property name="text">
+    <string>格式化设置</string>
+   </property>
+  </action>
+  <action name="action_usb_format">
+   <property name="text">
+    <string>U盘格式化设置</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

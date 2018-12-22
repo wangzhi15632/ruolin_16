@@ -4,8 +4,11 @@
 #include <QThread>
 #include "usb_copy.h"
 #include "lib/libstorage.h"
-
 #include "mainwindow.h"
+
+#define FILE_MAX_NUM   1000
+#define FILE_MAX_NAME   64
+#define HARD_DISK_MAX_NUM 8
 
 class MainWindow;
 
@@ -61,6 +64,7 @@ private slots:
 signals:
     void sendToUI(int, sum_t, copied_t, time_t, bool);
     void sendUDevInfo(int, unsigned long, unsigned long, unsigned long);
+    void sendUDevInfoTranscoding(int, unsigned long long);
 
 public:
     char mountDir[20];
@@ -73,7 +77,7 @@ private:
    copied_t copied;
    time_t copy_start_time;
    int num;
-   char file_name[1000][100];
+   char file_name[FILE_MAX_NUM][FILE_MAX_NAME];
    int file_num;
 };
 
