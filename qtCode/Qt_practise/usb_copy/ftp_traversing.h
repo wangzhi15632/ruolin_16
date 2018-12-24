@@ -14,19 +14,19 @@ public:
     explicit FtpTraversing();
 
 private:
-    char* make_path(char *dest, const char *frt, const char *snd);
+    //char* make_path(char *dest, const char *frt, const char *snd);
     //遍历汇总
-    int walk_sum(const char* path_from, const char* path_tree);
-    int sum_up(const char* path_tree, const struct stat* st);
+  //  int walk_sum(const char* path_from, const char* path_tree);
+   // int sum_up(const char* path_tree, const struct stat* st);
     //遍历传输
-    int walk_transmisson(const char* path_from, const char* path_tree);
-    int transmission_action(const char* path_from, const char* path_tree, const struct stat* st);
+    //int walk_transmisson(const char* path_from, const char* path_tree);
+    //int transmission_action(const char* path_from, const char* path_tree, const struct stat* st);
 
 signals:
-    void starFtpPut(char *, const QString, long long);
+   // void starFtpPut(char *, const QString, long long);
 
 private slots:
-    void transmission_task();
+   // void transmission_task();
 
 private:
 

@@ -9,6 +9,8 @@
 #include <QSemaphore>
 #include <QThread>
 #include "ftp_traversing.h"
+#include "qftp.h"
+#include "qurlinfo.h"
 
 QSemaphore CopyThreadNum(USB_MAX_NUM);
 bool ftpFlag = true;
@@ -19,7 +21,7 @@ copied_t ftp_transmission;
 time_t ftp_transmission_start_time;
 char *path[HARD_DISK_MAX_NUM] = {"/usb_copy_dir/usb_0_1", "/usb_copy_dir/usb_2_3", "/usb_copy_dir/usb_4_5", "/usb_copy_dir/usb_6_7",
                       "/usb_copy_dir/usb_8_9", "/usb_copy_dir/usb_10_11", "/usb_copy_dir/usb_12_13", "/usb_copy_dir/usb_14_15"};
-/*记录目录当前正在写入的USB设备，为了保证拷贝速率，目录正在拷贝的USB设备不能大于2*/
+/*记录目录当前正在写入的USB设备，为了保证拷贝速率，目录正在拷贝的USB设备不能大于2,每一个目录相当于一块硬盘*/
 unsigned int dir_writting_num[HARD_DISK_MAX_NUM] = {0, 0, 0, 0, 0, 0, 0, 0};
 bool is_format_usb = true;
 
@@ -290,25 +292,7 @@ void MainWindow::ftpCfgBtnClicked()
 {
     if(QDialog::Accepted == ftpCfg->exec())
     {
-        ftpWork->ip = ftpCfg->getIPAddr();
-        ftpWork->port = ftpCfg->getPortAddr();
-        ftpWork->userName = ftpCfg->getUserName();
-        ftpWork->password = ftpCfg->getPassword();
-
-        qDebug() << "ip:%s" << ftpWork->ip;
-        qDebug() << "port:%s" << ftpWork->port;
-        qDebug() << "userName:%s" << ftpWork->userName;
-        qDebug() << "password:%s" << ftpWork->password;
-
-        if(ftpWork->ip != nullptr && ftpWork->port != nullptr)
-        {
-            ftpWork->setHostPort(ftpWork->ip, ftpWork->port.toInt());
-        }
-
-        if(ftpWork->userName != nullptr && ftpWork->password != nullptr)
-        {
-            ftpWork->setUserInfo(ftpWork->userName, ftpWork->password);
-        }
+        ;
     }
 }
 
@@ -347,6 +331,8 @@ void MainWindow::init()
     pal.setColor(QPalette::Background, Qt::white);
     ui->centralWidget->setAutoFillBackground(true);
     ui->centralWidget->setPalette(pal);
+    //setStyleSheet(QString::fromUtf8("border:1px solid red"));
+    //this->setStyleSheet(QString::fromUtf8("border:3px solid red"));
 
     usbfmt = new usbFormat(this);
 
@@ -355,7 +341,7 @@ void MainWindow::init()
     /*init pie char for usb*/
     drawPieChartInit();
 
-    ftpCfg = new FtpConfig(this);
+    ftpCfg = new FtpConfig();
     connect(ui->pushButton_ftpCfg, SIGNAL(clicked(bool)), this, SLOT(ftpCfgBtnClicked()));
 
     initTimer();
@@ -388,15 +374,15 @@ void MainWindow::init()
     ftpThread->start();
 
     /*创建FTP遍历线程*/
-    ftpTraverThread = new QThread(this);
-    ftpTraver = new FtpTraversing();
+//    ftpTraverThread = new QThread(this);
+   // ftpTraver = new FtpTraversing();
 
-    connect(ftpTraverThread, SIGNAL(finished()), ftpTraverThread, SLOT(deleteLater()));
-    connect(this, SIGNAL(starFtpTransmission()), ftpTraver, SLOT(transmission_task()));
-    connect(ftpTraver, SIGNAL(starFtpPut(char *, const QString, long long)), ftpWork, SLOT(put(char *, const QString, long long)));
-    ftpTraver->moveToThread(ftpTraverThread);
+  //  connect(ftpTraverThread, SIGNAL(finished()), ftpTraverThread, SLOT(deleteLater()));
+ //   connect(this, SIGNAL(starFtpTransmission()), ftpTraver, SLOT(transmission_task()));
+ //   connect(ftpTraver, SIGNAL(starFtpPut(char *, const QString, long long)), ftpWork, SLOT(put(char *, const QString, long long)));
+  //  ftpTraver->moveToThread(ftpTraverThread);
 
-    ftpTraverThread->start();
+  //  ftpTraverThread->start();
 }
 
 void MainWindow::initTimer()

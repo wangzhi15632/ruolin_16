@@ -14,6 +14,8 @@
 #include <QNetworkReply>
 #include "ftpconfig.h"
 #include "usbformat.h"
+#include "qftp.h"
+#include "qurlinfo.h"
 
 #define USB_MAX_NUM 16
 

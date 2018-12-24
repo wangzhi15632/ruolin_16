@@ -35,7 +35,9 @@ SOURCES += \
     ftpthread.cpp \
     ftp_traversing.cpp \
     ftpconfig.cpp \
-    usbformat.cpp
+    usbformat.cpp \
+    qftp.cpp \
+    qurlinfo.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -48,7 +50,9 @@ HEADERS += \
     ftp_traversing.h \
     ftpconfig.h \
     lib/libstorage.h \
-    usbformat.h
+    usbformat.h \
+    qftp.h \
+    qurlinfo.h
 
 FORMS += \
         mainwindow.ui \
@@ -68,3 +72,6 @@ INCLUDEPATH += $$PWD/.
 DEPENDPATH += $$PWD/.
 
 unix:!macx: PRE_TARGETDEPS += $$PWD/lib/libstorage.a
+
+RESOURCES += \
+    resorces.qrc
