@@ -39,10 +39,10 @@ MainWindow::~MainWindow()
 
     delete searchThread;
 
-    ftpThread->quit();
-    ftpThread->wait();
-    ftpTraverThread->quit();
-    ftpTraverThread->wait();
+   // ftpThread->quit();
+   // ftpThread->wait();
+  //  ftpTraverThread->quit();
+  //  ftpTraverThread->wait();
 
     qDebug() << "delete ftp";
     delete ftpWork;

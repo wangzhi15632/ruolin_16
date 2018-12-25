@@ -18,6 +18,7 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
+#include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QProgressBar>
 #include <QtWidgets/QPushButton>
@@ -33,6 +34,8 @@ QT_BEGIN_NAMESPACE
 class Ui_MainWindow
 {
 public:
+    QAction *action_2;
+    QAction *action_usb_format;
     QWidget *centralWidget;
     QHBoxLayout *horizontalLayout_5;
     QWidget *widget;
@@ -71,6 +74,7 @@ public:
     QSpacerItem *horizontalSpacer;
     QTextEdit *textEdit;
     QMenuBar *menuBar;
+    QMenu *menu;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
     QToolBar *toolBar;
@@ -80,6 +84,10 @@ public:
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QStringLiteral("MainWindow"));
         MainWindow->resize(1548, 906);
+        action_2 = new QAction(MainWindow);
+        action_2->setObjectName(QStringLiteral("action_2"));
+        action_usb_format = new QAction(MainWindow);
+        action_usb_format->setObjectName(QStringLiteral("action_usb_format"));
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         horizontalLayout_5 = new QHBoxLayout(centralWidget);
@@ -270,7 +278,9 @@ public:
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 1548, 22));
+        menuBar->setGeometry(QRect(0, 0, 1548, 25));
+        menu = new QMenu(menuBar);
+        menu->setObjectName(QStringLiteral("menu"));
         MainWindow->setMenuBar(menuBar);
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -282,6 +292,9 @@ public:
         toolBar->setObjectName(QStringLiteral("toolBar"));
         MainWindow->addToolBar(Qt::TopToolBarArea, toolBar);
 
+        menuBar->addAction(menu->menuAction());
+        menu->addAction(action_usb_format);
+
         retranslateUi(MainWindow);
 
         QMetaObject::connectSlotsByName(MainWindow);
@@ -290,6 +303,8 @@ public:
     void retranslateUi(QMainWindow *MainWindow)
     {
         MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", Q_NULLPTR));
+        action_2->setText(QApplication::translate("MainWindow", "\346\240\274\345\274\217\345\214\226\350\256\276\347\275\256", Q_NULLPTR));
+        action_usb_format->setText(QApplication::translate("MainWindow", "U\347\233\230\346\240\274\345\274\217\345\214\226\350\256\276\347\275\256", Q_NULLPTR));
         groupBox->setTitle(QApplication::translate("MainWindow", "USB-1", Q_NULLPTR));
         groupBox_2->setTitle(QApplication::translate("MainWindow", "USB-2", Q_NULLPTR));
         groupBox_3->setTitle(QApplication::translate("MainWindow", "USB-3", Q_NULLPTR));
@@ -311,6 +326,7 @@ public:
         label->setText(QApplication::translate("MainWindow", "\351\200\237\345\272\246:", Q_NULLPTR));
         label_2->setText(QString());
         pushButton_ftpCfg->setText(QApplication::translate("MainWindow", "FTP\350\256\276\347\275\256", Q_NULLPTR));
+        menu->setTitle(QApplication::translate("MainWindow", "\350\256\276\347\275\256", Q_NULLPTR));
         toolBar->setWindowTitle(QApplication::translate("MainWindow", "toolBar", Q_NULLPTR));
     } // retranslateUi
 

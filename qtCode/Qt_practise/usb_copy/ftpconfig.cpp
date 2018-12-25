@@ -21,7 +21,7 @@ FtpConfig::FtpConfig(QDialog *parent)
     fileList->setEnabled(false);
     fileList->setRootIsDecorated(false);
     fileList->setHeaderLabels(QStringList() << tr("Name") << tr("Size") << tr("Progress") << tr("flag"));
-    fileList->header()->setStretchLastSection(false);
+    fileList->header()->setStretchLastSection(true);
     fileList->setColumnWidth(0,800);
     fileList->setColumnWidth(2,250);
 
@@ -86,8 +86,6 @@ QSize FtpConfig::sizeHint() const
 
 void FtpConfig::connectOrDisconnect()
 {
-    ftpTraversing("/usb_copy_dir");
-
     if (ftp) {
         ftp->abort();
         ftp->deleteLater();
@@ -95,6 +93,8 @@ void FtpConfig::connectOrDisconnect()
 
         fileList->setEnabled(false);
         uploadButton->setEnabled(false);
+        uploadButton->setText(tr("Upload"));
+        //cancelUpload();
         connectButton->setEnabled(true);
         connectButton->setText(tr("Connect"));
 
@@ -104,6 +104,8 @@ void FtpConfig::connectOrDisconnect()
         statusLabel->setText(tr("Please enter the name of an FTP server."));
         return;
     }
+
+    ftpTraversing("/usb_copy_dir");
 
 #ifndef QT_NO_CURSOR
     setCursor(Qt::WaitCursor);
@@ -164,6 +166,7 @@ void FtpConfig::connectToFtp()
     }
 
     fileList->setEnabled(true);
+
     connectButton->setEnabled(false);
     connectButton->setText(tr("Disconnect"));
     statusLabel->setText(tr("Connecting to FTP server %1...")
@@ -174,30 +177,27 @@ void FtpConfig::connectToFtp()
 void FtpConfig::uploadFile()
 {
     QString fileName;
-    QByteArray date;
-    QString file_dir;
 
     uploadButton->setEnabled(false);
 
     QTreeWidgetItemIterator it(fileList);
-        while(*it){
+    while(*it){
 
-            fileName = (*it)->text(0);
-            ++it;
-            file_dir = "/usb_copy_dir/";
-            file_dir.append(fileName);
-            file = new QFile(fileName);
-            date = file->readAll(file_dir);
+        fileName = (*it)->text(0);
+        ++it;
+        qDebug() << "fileName" << fileName;
+        file = new QFile(fileName);
+        file->open(QIODevice::ReadOnly);
 
-            ftp->put(date, file, Binary);
-        }
+        ftp->put(file, fileName);
+
+        delete file;
+    }
 
     //progressDialog->setLabelText(tr("Uploading %1...").arg(fileName));
    // progressDialog->exec();
 }
-//![4]
 
-//![5]
 void FtpConfig::cancelUpload()
 {
     ftp->abort();
@@ -208,9 +208,7 @@ void FtpConfig::cancelUpload()
     }
     delete file;
 }
-//![5]
 
-//![6]
 void FtpConfig::ftpCommandFinished(int, bool error)
 {
 #ifndef QT_NO_CURSOR
@@ -230,18 +228,14 @@ void FtpConfig::ftpCommandFinished(int, bool error)
         statusLabel->setText(tr("Logged onto %1.")
                              .arg(ftpServerLineEdit->text()));
         fileList->setFocus();
-        uploadButton->setDefault(true);
+        uploadButton->setEnabled(true);
         connectButton->setEnabled(true);
         return;
     }
-//![6]
 
-//![7]
     if (ftp->currentCommand() == QFtp::Login)
         ;
-//![7]
 
-//![8]
     if (ftp->currentCommand() == QFtp::Get) {
         if (error) {
             statusLabel->setText(tr("Canceled upload of %1.")
@@ -255,14 +249,9 @@ void FtpConfig::ftpCommandFinished(int, bool error)
             file->close();
         }
         delete file;
-//![8]
-//![9]
     }
-
-//![9]
 }
 
-//![10]
 void FtpConfig::addToList(QString file_name, const struct stat &st)
 {
     QTreeWidgetItem *item = new QTreeWidgetItem;
@@ -279,17 +268,13 @@ void FtpConfig::addToList(QString file_name, const struct stat &st)
         fileList->setEnabled(true);
     }
 }
-//![10]
 
-
-//![13]
 void FtpConfig::updateDataTransferProgress(qint64 readBytes,
                                            qint64 totalBytes)
 {
-    progressDialog->setMaximum(totalBytes);
-    progressDialog->setValue(readBytes);
+   // progressDialog->setMaximum(totalBytes);
+  //  progressDialog->setValue(readBytes);
 }
-//![13]
 
 void FtpConfig::enableConnectButton()
 {
@@ -462,7 +447,7 @@ int FtpConfig::walk_sum(const char* path_from, const char* path_tree)
     /*如果是目录，则浏览目录，否则结束*/
     if(!S_ISDIR(st.st_mode))
     {
-        addToList(path_tree, st);
+        addToList(path_from_full, st);
         return OPP_CONTINUE;
     }
 
@@ -503,7 +488,7 @@ int FtpConfig::walk_sum(const char* path_from, const char* path_tree)
         }
         else
         {
-            addToList(path_tree_new, st);
+            addToList(path_from_full, st);
         }
     }
 

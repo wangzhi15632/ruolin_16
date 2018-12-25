@@ -72,6 +72,7 @@ private:
     QString currentPath;
     QFtp *ftp;
     QFile *file;
+    QByteArray date;
 
     QNetworkSession *networkSession;
     QNetworkConfigurationManager manager;
