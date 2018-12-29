@@ -24,6 +24,7 @@ char *path[HARD_DISK_MAX_NUM] = {"/usb_copy_dir/usb_0_1", "/usb_copy_dir/usb_2_3
 /*记录目录当前正在写入的USB设备，为了保证拷贝速率，目录正在拷贝的USB设备不能大于2,每一个目录相当于一块硬盘*/
 unsigned int dir_writting_num[HARD_DISK_MAX_NUM] = {0, 0, 0, 0, 0, 0, 0, 0};
 bool is_format_usb = true;
+QSemaphore ftp_Sem(1);
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -39,14 +40,7 @@ MainWindow::~MainWindow()
 
     delete searchThread;
 
-   // ftpThread->quit();
-   // ftpThread->wait();
-  //  ftpTraverThread->quit();
-  //  ftpTraverThread->wait();
-
-    qDebug() << "delete ftp";
-    delete ftpWork;
-    delete ftpTraver;
+    delete ftpCfg;
 }
 
 void MainWindow::slotFindDev(char *mountPoint)
@@ -335,14 +329,10 @@ void MainWindow::init()
     //this->setStyleSheet(QString::fromUtf8("border:3px solid red"));
 
     usbfmt = new usbFormat(this);
-
     connect(ui->action_usb_format, SIGNAL(triggered(bool)), this, SLOT(usbFmtActClicked()));
 
     /*init pie char for usb*/
     drawPieChartInit();
-
-    ftpCfg = new FtpConfig();
-    connect(ui->pushButton_ftpCfg, SIGNAL(clicked(bool)), this, SLOT(ftpCfgBtnClicked()));
 
     initTimer();
 #if 0
@@ -362,16 +352,8 @@ void MainWindow::init()
     searchThread->start();
 
     /*创建FTP传输线程*/
-    ftpThread = new QThread(this);
-    ftpWork = new FtpManager();
-
-    connect(ftpThread, SIGNAL(finished()), ftpThread, SLOT(deleteLater()));
-
-    connect(ftpWork, SIGNAL(sendFtpInfo(QString, sum_t, copied_t, time_t)), this,
-            SLOT(updateFtpProgress(QString, sum_t, copied_t, time_t)));
-
-    ftpWork->moveToThread(ftpThread);
-    ftpThread->start();
+    ftpCfg = new FtpConfig();
+    connect(ui->pushButton_ftpCfg, SIGNAL(clicked(bool)), this, SLOT(ftpCfgBtnClicked()));
 
     /*创建FTP遍历线程*/
 //    ftpTraverThread = new QThread(this);

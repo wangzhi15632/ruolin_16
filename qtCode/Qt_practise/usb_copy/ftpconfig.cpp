@@ -1,6 +1,7 @@
 #include "ftpconfig.h"
 #include "qftp.h"
 #include "ftp_traversing.h"
+#include "mainwindow.h"
 #include <sys/stat.h>
 #include <QtWidgets>
 #include <QtNetwork>
@@ -8,7 +9,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 
-FtpConfig::FtpConfig(QDialog *parent)
+FtpConfig::FtpConfig(QWidget *parent)
     : QDialog(parent), ftp(0), networkSession(0)
 {
     ftpServerLabel = new QLabel(tr("Ftp &server:"));
@@ -41,11 +42,9 @@ FtpConfig::FtpConfig(QDialog *parent)
 #if 0
     connect(progressDialog, SIGNAL(canceled()), this, SLOT(cancelUpload()));
  #endif
-
     connect(connectButton, SIGNAL(clicked()), this, SLOT(connectOrDisconnect()));
     connect(uploadButton, SIGNAL(clicked()), this, SLOT(uploadFile()));
     connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
-
 
     QHBoxLayout *topLayout = new QHBoxLayout;
     topLayout->addWidget(ftpServerLabel);
@@ -68,20 +67,17 @@ FtpConfig::~FtpConfig()
 
 }
 
+QSize FtpConfig::sizeHint() const
+{
+    return QSize(1500, 800);
+}
+
+
 /*遍历要上传的目录*/
 void FtpConfig::ftpTraversing(const char* path)
 {
     fileList->clear();
-    currentPath.clear();
-
     walk_sum(path, nullptr);
-}
-
-
-
-QSize FtpConfig::sizeHint() const
-{
-    return QSize(1500, 800);
 }
 
 void FtpConfig::connectOrDisconnect()
@@ -131,6 +127,7 @@ void FtpConfig::connectOrDisconnect()
                 connect(networkSession, SIGNAL(opened()), this, SLOT(connectToFtp()));
                 connect(networkSession, SIGNAL(error(QNetworkSession::SessionError)), this, SLOT(enableConnectButton()));
             }
+
             connectButton->setEnabled(false);
             statusLabel->setText(tr("Opening network session."));
             networkSession->open();
@@ -144,6 +141,8 @@ void FtpConfig::connectOrDisconnect()
 void FtpConfig::connectToFtp()
 {
     ftp = new QFtp(this);
+
+    //ftp->moveToThread(ftp_thread);
     connect(ftp, SIGNAL(commandFinished(int,bool)),
             this, SLOT(ftpCommandFinished(int,bool)));
 
@@ -177,23 +176,37 @@ void FtpConfig::connectToFtp()
 void FtpConfig::uploadFile()
 {
     QString fileName;
+    bool bRet = false;
+    int nVal;
 
     uploadButton->setEnabled(false);
 
     QTreeWidgetItemIterator it(fileList);
     while(*it){
 
+        bRet = false;
+        nVal = 100;
+        while(bRet == false)
+        {
+            nVal--;
+            if(nVal == 0)
+                break;
+
+            qApp->processEvents();
+
+            bRet = ftp_Sem.tryAcquire(1,100);
+            qDebug() << "ftp_quire" << bRet;
+        }
+
         fileName = (*it)->text(0);
         ++it;
         qDebug() << "fileName" << fileName;
         file = new QFile(fileName);
         file->open(QIODevice::ReadOnly);
-
-        ftp->put(file, fileName);
-
-        delete file;
+        date = fileName.toLatin1();
+        ftp->put(file, strrchr(date.data(), '/'));
+       //ftp->put(file, "e.txt");
     }
-
     //progressDialog->setLabelText(tr("Uploading %1...").arg(fileName));
    // progressDialog->exec();
 }
@@ -202,15 +215,18 @@ void FtpConfig::cancelUpload()
 {
     ftp->abort();
 
-    if (file->exists()) {
-        file->close();
-        file->remove();
+    if(file != nullptr)
+    {
+        if (file->exists()) {
+            file->close();
+        }
+        delete file;
     }
-    delete file;
 }
 
 void FtpConfig::ftpCommandFinished(int, bool error)
 {
+    qDebug() << "finished";
 #ifndef QT_NO_CURSOR
     setCursor(Qt::ArrowCursor);
 #endif
@@ -234,9 +250,12 @@ void FtpConfig::ftpCommandFinished(int, bool error)
     }
 
     if (ftp->currentCommand() == QFtp::Login)
+    {
         ;
+    }
 
-    if (ftp->currentCommand() == QFtp::Get) {
+    if (ftp->currentCommand() == QFtp::Put) {
+        qDebug() << "delete";
         if (error) {
             statusLabel->setText(tr("Canceled upload of %1.")
                                  .arg(file->fileName()));
@@ -245,9 +264,13 @@ void FtpConfig::ftpCommandFinished(int, bool error)
             statusLabel->setText(tr("Uploaded %1 to current directory.")
                                  .arg(file->fileName()));
 
-            file->remove();
             file->close();
+            file->remove();
         }
+        qDebug() << "ftp_release";
+
+        ftp_Sem.release();
+
         delete file;
     }
 }
@@ -320,112 +343,6 @@ char* FtpConfig::make_path(char *dest, const char *frt, const char *snd)
     return dest;
 }
 
-int FtpConfig::walk_transmisson(const char* path_from, const char* path_tree)
-{
-
-//    struct stat st;
-//    DIR* dir = nullptr;
-//    struct dirent *entry = nullptr;
-//    char path_tree_new[MAX_PATH_LENGTH];
-//    char path_from_full[MAX_PATH_LENGTH];
-//    int ret_val = OPP_CONTINUE;
-
-//    /*获得源的属性*/
-//    make_path(path_from_full, path_from, path_tree);
-//    if(-1 == stat(path_from_full, &st))
-//    {
-//        qCritical("can't access \"%s\".\n", path_from_full);
-//        return OPP_SKIP;
-//    }
-
-//    /*如果是目录，则浏览目录，否则结束*/
-//    if(!S_ISDIR(st.st_mode))
-//    {
-//        return OPP_CONTINUE;
-//    }
-
-//    /*打开目录*/
-//    if(!(dir = opendir(path_from_full)))
-//    {
-//        qCritical("can't open directory \"%s\".\n", path_from_full);
-//        return OPP_SKIP;
-//    }
-
-//    /*浏览目录*/
-//    while((entry = readdir(dir)) != nullptr)
-//    {
-//        /*构建path_tree_new*/
-//        make_path(path_tree_new, path_tree, entry->d_name);
-//        make_path(path_from_full, path_from, path_tree_new);
-
-//        /*无法访问 skip*/
-//        if(-1 == stat(path_from_full, &st))
-//        {
-//            qCritical("skip, can't access %s\"\".\n", path_from_full);
-//            continue;
-//        }
-//        /* 忽略 . 和 .. */
-//        if(S_ISDIR(st.st_mode) && (strcmp(".", entry->d_name) == 0 || strcmp("..", entry->d_name) == 0))
-//        {
-//            continue;
-//        }
-
-//        if(S_ISDIR(st.st_mode))
-//        {
-//          /*递归处理子目录*/
-//            if(walk_transmisson(path_from, path_tree_new) == OPP_CANCEL)
-//            {
-//                ret_val = OPP_CANCEL;
-//                break;
-//            }
-//        }
-//        else
-//        {
-//            /*处理函数处理一个子项*/
-//            if(transmission_action(path_from,path_tree_new, &st) == OPP_CANCEL)
-//            {
-//                ret_val = OPP_CANCEL;
-//                break;
-//            }
-//        }
-//    }
-
-//    closedir(dir);
-//    return ret_val;
-}
-
-/* 操作 */
-int FtpConfig::transmission_action(const char* path_from, const char* path_tree, const struct stat* st)
-{
-//    int ret_val = OPP_CONTINUE;
-
-//    if(S_ISREG(st->st_mode))
-//    {
-//        /*与U盘复制线程进行互斥*/
-//        if(CopyThreadNum.tryAcquire(USB_MAX_NUM) == false)
-//        {
-//            ret_val = OPP_CANCEL;
-//            return ret_val;
-//        }
-//        qDebug() << "acquire 16";
-//        /*与FTP传输线程进行互斥*/
-//        ftp_mutex.lock();
-
-//        make_path(path_from_full, path_from, path_tree);
-//        qDebug("file:%s", path_from_full);
-//        emit starFtpPut(path_from_full, nullptr, st->st_size);
-
-//        CopyThreadNum.release(USB_MAX_NUM);
-//    }
-//    else
-//    {
-//        ret_val = OPP_SKIP;
-//        qWarning("skip, \"%s\" is not a file\n", path_from_full);
-//    }
-
-//    return ret_val;
-}
-
 
 int FtpConfig::walk_sum(const char* path_from, const char* path_tree)
 {
@@ -496,39 +413,3 @@ int FtpConfig::walk_sum(const char* path_from, const char* path_tree)
     return ret_val;
 }
 
-
-void FtpConfig::transmission_task()
-{
-//    qDebug() << "ftp_thread" << QThread::currentThread();
-
-//    char *path_from = nullptr;
-
-//    path_from = "/usb_copy_dir";
-
-//    memset(&ftp_sum, 0, sizeof(ftp_sum));
-//    //添加for循环
-//    //for(int i = 0; i < 8; i++)
-//    //{
-//   //     path_from = path[i];
-//        walk_sum(path_from, nullptr);
-//   // }
-
-//    if(ftp_sum.file == 0 && ftp_sum.dir == 0)
-//    {
-//        qInfo("nothing found.\n");
-//    }
-//    else
-//    {
-//        /* 第二次遍历：执行*/
-//        memset(&ftp_transmission, 0, sizeof(ftp_transmission));
-//        //记录开始传输时间
-//        time(&ftp_transmission_start_time);
-//        //添加for循环
-//      //  for(int i = 0; i < 8; i++)
-//      //  {
-//            //path_from = path[i];
-//            path_from = "/usb_copy_dir";
-//            walk_transmisson(path_from, nullptr);
-//       // }
-//    }
-}
