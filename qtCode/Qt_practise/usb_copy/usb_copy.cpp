@@ -342,37 +342,58 @@ int CopyThread::action(const char* path_from, const char* path_to, const char* p
         {  
             do  
             {
-                /* open target file for write */  
-                if((dest_file = fopen(path_to_full, "wb")) != nullptr)
+                /*首先确认当前文件读出字节数大于0，再open文件*/
+                if((rd = fread(buf, 1, COPY_BUF_SIZE, src_file)) > 0)
                 {
-                    while((rd = fread(buf, 1, COPY_BUF_SIZE, src_file)) > 0)  
-                    {  
-                        wr = 0;  
-                        do  
-                        {  
-                            swr = fwrite(buf + wr, 1, rd - wr, dest_file);  
-                            wr += swr;  
-                        }  
-                        while(swr > 0 && wr < rd);  
-                        copied.size += rd;
-                      
-                        if(wr != rd)  
-                        {  
-                            /*只有部分文件被复制也视为成功因为文件系统中已经有这个文件的记录了*/  
-                            qCritical("write file error %s.\n", path_to_full);
-                            break;  
-                        }  
-                    }  
-                    fclose(dest_file);  
-                    chmod(path_to_full, st->st_mode);  
-                    copied.file++;
-                    emit(sendToUI(num, sum, copied, copy_start_time, false));
-                }  
-                else  
-                {  
-                    ret_val = OPP_SKIP;  
-                    qCritical("skip, can't open target file \"%s\"\n", path_to_full);
-                }  
+                     if((dest_file = fopen(path_to_full, "wb")) != nullptr)
+                     {
+                         wr = 0;
+                         do
+                         {
+                             swr = fwrite(buf + wr, 1, rd - wr, dest_file);
+                             wr += swr;
+                         }
+                         while(swr > 0 && wr < rd);
+                         copied.size += rd;
+
+                         if(wr != rd)
+                         {
+                             /*只有部分文件被复制也视为成功因为文件系统中已经有这个文件的记录了*/
+                             qCritical("write file error %s.\n", path_to_full);
+                             break;
+                         }
+
+                         while((rd = fread(buf, 1, COPY_BUF_SIZE, src_file)) > 0)
+                         {
+                             wr = 0;
+                             do
+                             {
+                                 swr = fwrite(buf + wr, 1, rd - wr, dest_file);
+                                 wr += swr;
+                             }
+                             while(swr > 0 && wr < rd);
+                             copied.size += rd;
+
+                             if(wr != rd)
+                             {
+                                 /*只有部分文件被复制也视为成功因为文件系统中已经有这个文件的记录了*/
+                                 qCritical("write file error %s.\n", path_to_full);
+                                 break;
+                             }
+                         }
+
+                         fclose(dest_file);
+                         chmod(path_to_full, st->st_mode);
+                         copied.file++;
+                         emit(sendToUI(num, sum, copied, copy_start_time, false));
+                     }
+                     else
+                     {
+                         ret_val = OPP_SKIP;
+                         qCritical("skip, can't open target file \"%s\"\n", path_to_full);
+                     }
+                }
+
             }while(0);
 
             fclose(src_file);  
@@ -1106,9 +1127,6 @@ int CopyThread::cp_task(char *dir)
         sendUDevInfoTranscoding(num, sum.size);
 
         transcoding_copy(path_to);
-
-        emit(sendToUI(num, sum, copied, copy_start_time, true));
-        storage_clear(mountDir);
     }
     else
     {
@@ -1116,12 +1134,9 @@ int CopyThread::cp_task(char *dir)
         if(sum.file == 0 && sum.dir == 0)
         {
             qInfo("nothing found.\n");
-            return -1;
         }
         else
         {
-            path_from = dir;
-
             /*源是否存在*/
             if(-1 == stat(path_from, &st_src))
             {
@@ -1159,6 +1174,27 @@ int CopyThread::cp_task(char *dir)
             walk_copy(path_from, path_to, nullptr);
         }
     }
+
+    if(is_format_usb == true)
+    {
+        if(transcodingFlag == true)
+        {
+            if(copied.size == sum.size)
+            {
+                storage_clear(mountDir);
+            }
+        }
+        else
+        {
+            if(copied.size == sum.size)
+            {
+                //storage_clear(mountDir);
+            }
+        }
+    }
+
+    emit(sendToUI(num, sum, copied, copy_start_time, true));
+
     copy_num_mutex.lock();
     dir_writting_num[i]--;
     copy_num_mutex.unlock();

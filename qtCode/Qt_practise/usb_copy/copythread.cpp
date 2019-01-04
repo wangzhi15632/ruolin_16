@@ -33,7 +33,7 @@ void CopyThread::cp_dir(char *mountPoint)
 void CopyThread::run()
 {
     CopyThreadNum.acquire();
-qDebug() << "run" << currentThreadId();
+
     if(rcvFlag)
     {
         struct statfs s;

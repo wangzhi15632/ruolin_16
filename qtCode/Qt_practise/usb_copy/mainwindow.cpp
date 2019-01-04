@@ -9,8 +9,6 @@
 #include <QSemaphore>
 #include <QThread>
 #include "ftp_traversing.h"
-#include "qftp.h"
-#include "qurlinfo.h"
 
 QSemaphore CopyThreadNum(USB_MAX_NUM);
 bool ftpFlag = true;
@@ -21,10 +19,9 @@ copied_t ftp_transmission;
 time_t ftp_transmission_start_time;
 char *path[HARD_DISK_MAX_NUM] = {"/usb_copy_dir/usb_0_1", "/usb_copy_dir/usb_2_3", "/usb_copy_dir/usb_4_5", "/usb_copy_dir/usb_6_7",
                       "/usb_copy_dir/usb_8_9", "/usb_copy_dir/usb_10_11", "/usb_copy_dir/usb_12_13", "/usb_copy_dir/usb_14_15"};
-/*记录目录当前正在写入的USB设备，为了保证拷贝速率，目录正在拷贝的USB设备不能大于2,每一个目录相当于一块硬盘*/
+/*记录目录当前正在写入的USB设备，为了保证拷贝速率，目录正在拷贝的USB设备不能大于2*/
 unsigned int dir_writting_num[HARD_DISK_MAX_NUM] = {0, 0, 0, 0, 0, 0, 0, 0};
 bool is_format_usb = true;
-QSemaphore ftp_Sem(1);
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -40,7 +37,14 @@ MainWindow::~MainWindow()
 
     delete searchThread;
 
-    delete ftpCfg;
+    ftpThread->quit();
+    ftpThread->wait();
+    ftpTraverThread->quit();
+    ftpTraverThread->wait();
+
+    qDebug() << "delete ftp";
+    delete ftpWork;
+    delete ftpTraver;
 }
 
 void MainWindow::slotFindDev(char *mountPoint)
@@ -100,12 +104,12 @@ void MainWindow::slotShowTranscoding(int i, unsigned long long size)
         usb[i].chartview->chart()->setTitle(tr("SD卡未检测到数据"));
     }
 
-    human_size(size, disk_avail);
+    human_size(usb[i].usb_sum - size, disk_avail);
 
     usb[i].label4->setText(disk_avail);
 
-    usb[i].slice_1->setValue(1 - static_cast<double>(size)/static_cast<double>(usb[i].usb_sum));
-    usb[i].slice_2->setValue(static_cast<double>(size)/static_cast<double>(usb[i].usb_sum));
+    usb[i].slice_1->setValue(static_cast<double>(size)/static_cast<double>(usb[i].usb_sum));
+    usb[i].slice_2->setValue(1 - static_cast<double>(size)/static_cast<double>(usb[i].usb_sum));
 
 }
 
@@ -123,7 +127,7 @@ void MainWindow::slotShow(int i, unsigned long block,unsigned long bsize,unsigne
     usb[i].usb_sum = block * bsize;
 
     human_size(usb[i].usb_sum, disk_size);
-    human_size(usb[i].usb_sum - bavail * bsize, disk_avail);
+    human_size(bavail * bsize, disk_avail);
 
     usb[i].label2->setText(disk_size);
     usb[i].label4->setText(disk_avail);
@@ -155,7 +159,7 @@ void MainWindow::showLocalStorage()
     }
 
     human_size(blocks * s[0].f_bsize, disk_size);
-    human_size((blocks - free) * s[0].f_bsize, disk_avail);
+    human_size(free * s[0].f_bsize, disk_avail);
 
     local.label2->setText(disk_size);
     local.label4->setText(disk_avail);
@@ -243,10 +247,18 @@ void MainWindow::slotProgress(int i, sum_t sum, copied_t copied, time_t copy_sta
     }
     else
     {
-        usb[i].chartview->chart()->setTitleBrush(QBrush(Qt::darkRed));
-        usb[i].chartview->chart()->setTitle(tr("拷贝并格式化完成，请拔出SD卡"));
+        percent = static_cast<int>((copied.size * 1.0 / sum.size) * 100);
+        if(percent == 100)
+        {
+            usb[i].chartview->chart()->setTitleBrush(QBrush(Qt::darkRed));
+            usb[i].chartview->chart()->setTitle(tr("拷贝并格式化完成，请拔出SD卡"));
+        }
+        else
+        {
+            usb[i].chartview->chart()->setTitleBrush(QBrush(Qt::red));
+            usb[i].chartview->chart()->setTitle(tr("拷贝失败，发现%1文件，拷贝%2文件").arg(sum.file).arg(copied.file));
+        }
     }
-
 }
 void MainWindow::updateFtpProgress(QString str, sum_t ftp_sum, copied_t ftp_transmissioned, time_t ftp_star_time)
 {
@@ -286,7 +298,25 @@ void MainWindow::ftpCfgBtnClicked()
 {
     if(QDialog::Accepted == ftpCfg->exec())
     {
-        ;
+        ftpWork->ip = ftpCfg->getIPAddr();
+        ftpWork->port = ftpCfg->getPortAddr();
+        ftpWork->userName = ftpCfg->getUserName();
+        ftpWork->password = ftpCfg->getPassword();
+
+        qDebug() << "ip:%s" << ftpWork->ip;
+        qDebug() << "port:%s" << ftpWork->port;
+        qDebug() << "userName:%s" << ftpWork->userName;
+        qDebug() << "password:%s" << ftpWork->password;
+
+        if(ftpWork->ip != nullptr && ftpWork->port != nullptr)
+        {
+            ftpWork->setHostPort(ftpWork->ip, ftpWork->port.toInt());
+        }
+
+        if(ftpWork->userName != nullptr && ftpWork->password != nullptr)
+        {
+            ftpWork->setUserInfo(ftpWork->userName, ftpWork->password);
+        }
     }
 }
 
@@ -313,8 +343,7 @@ void MainWindow::init()
     qDebug() << "main thread: " << QThread::currentThread();
     /*config mainWindow size and title*/
     setWindowTitle(tr("16路转储平台 V1.0"));
-    setMinimumSize(QSize(800, 600));
-
+    setMinimumSize(QSize(1400, 1000));
     /*regist signal-slot parameter*/
     qRegisterMetaType<sum_t>("sum_t");
     qRegisterMetaType<copied_t>("copied_t");
@@ -325,23 +354,19 @@ void MainWindow::init()
     pal.setColor(QPalette::Background, Qt::white);
     ui->centralWidget->setAutoFillBackground(true);
     ui->centralWidget->setPalette(pal);
-    //setStyleSheet(QString::fromUtf8("border:1px solid red"));
-    //this->setStyleSheet(QString::fromUtf8("border:3px solid red"));
 
     usbfmt = new usbFormat(this);
+
     connect(ui->action_usb_format, SIGNAL(triggered(bool)), this, SLOT(usbFmtActClicked()));
 
     /*init pie char for usb*/
     drawPieChartInit();
 
+    ftpCfg = new FtpConfig(this);
+    connect(ui->pushButton_ftpCfg, SIGNAL(clicked(bool)), this, SLOT(ftpCfgBtnClicked()));
+
     initTimer();
-#if 0
-    /*add scroll bar*/
-    QScrollArea *scroll = new QScrollArea(ui->centralWidget);
-    scroll->setWidget(ui->widget);
-    ui->widget->setMinimumSize(1500,1000);
-    ui->horizontalLayout_5->addWidget(scroll);
-#endif
+
     /*create searchThread*/
     searchThread = new SearchThread(this);
     connect(searchThread, SIGNAL(finished()), searchThread, SLOT(deleteLater()));
@@ -352,19 +377,27 @@ void MainWindow::init()
     searchThread->start();
 
     /*创建FTP传输线程*/
-    ftpCfg = new FtpConfig();
-    connect(ui->pushButton_ftpCfg, SIGNAL(clicked(bool)), this, SLOT(ftpCfgBtnClicked()));
+    ftpThread = new QThread(this);
+    ftpWork = new FtpManager();
+
+    connect(ftpThread, SIGNAL(finished()), ftpThread, SLOT(deleteLater()));
+
+    connect(ftpWork, SIGNAL(sendFtpInfo(QString, sum_t, copied_t, time_t)), this,
+            SLOT(updateFtpProgress(QString, sum_t, copied_t, time_t)));
+
+    ftpWork->moveToThread(ftpThread);
+    ftpThread->start();
 
     /*创建FTP遍历线程*/
-//    ftpTraverThread = new QThread(this);
-   // ftpTraver = new FtpTraversing();
+    ftpTraverThread = new QThread(this);
+    ftpTraver = new FtpTraversing();
 
-  //  connect(ftpTraverThread, SIGNAL(finished()), ftpTraverThread, SLOT(deleteLater()));
- //   connect(this, SIGNAL(starFtpTransmission()), ftpTraver, SLOT(transmission_task()));
- //   connect(ftpTraver, SIGNAL(starFtpPut(char *, const QString, long long)), ftpWork, SLOT(put(char *, const QString, long long)));
-  //  ftpTraver->moveToThread(ftpTraverThread);
+    connect(ftpTraverThread, SIGNAL(finished()), ftpTraverThread, SLOT(deleteLater()));
+    connect(this, SIGNAL(starFtpTransmission()), ftpTraver, SLOT(transmission_task()));
+    connect(ftpTraver, SIGNAL(starFtpPut(char *, const QString, long long)), ftpWork, SLOT(put(char *, const QString, long long)));
+    ftpTraver->moveToThread(ftpTraverThread);
 
-  //  ftpTraverThread->start();
+    ftpTraverThread->start();
 }
 
 void MainWindow::initTimer()
@@ -429,151 +462,16 @@ QGroupBox* MainWindow::groupBox(int i)
     return nullptr;
 }
 
-#if 0
 void MainWindow::drawPieChartInit()
 {
     int i;
     QGroupBox *tmpGroup = nullptr;
 
-    local.slice_1 = new QPieSlice(QStringLiteral("free"), 1, this);
-    local.slice_1->setBrush(Qt::darkGray);
-    local.slice_2 = new QPieSlice(QStringLiteral("used"), 0, this);
-
-    // 将两个饼状分区加入series
-    local.series = new QPieSeries(this);
-    local.series->append(local.slice_1);
-    local.series->append(local.slice_2);
-    local.series->setPieSize(0.8);
-
-    local.chart = new QChart();
-    local.chart->addSeries(local.series);
-
-    local.chartview = new QChartView(this);
-    local.chartview->show();
-    local.chartview->setChart(local.chart);
-    local.chartview->setRenderHint(QPainter::Antialiasing);
-    local.chartview->setAutoFillBackground(true);
-
-    local.verticalLayout_local = new QVBoxLayout(ui->groupBox_17);
-    local.verticalLayout_local->setSpacing(0);
-    local.verticalLayout_local->setContentsMargins(0, 0, 0, 0);
-    local.verticalLayout_local->addWidget(local.chartview);
-
-    local.label1 = new QLabel(tmpGroup);
-    local.label1->setText(QApplication::translate("MainWindow", "总容量:", Q_NULLPTR));
-
-    local.label2 = new QLabel(tmpGroup);
-    local.label2->setAlignment(Qt::AlignLeft);
-
-    local.label3 = new QLabel(tmpGroup);
-    local.label3->setText(QApplication::translate("MainWindow", "已用空间:", Q_NULLPTR));
-
-    local.label4 = new QLabel(tmpGroup);
-    local.label4->setAlignment(Qt::AlignLeft);
-
-    local.horizontalLayout_local = new QHBoxLayout();
-    local.horizontalLayout_local->setSpacing(2);
-    local.horizontalLayout_local->setContentsMargins(0, 0, 0, 0);
-    local.horizontalLayout_local->addWidget(local.label1);
-    local.horizontalLayout_local->addWidget(local.label2);
-   // local.horizontalSpacer_local = new QSpacerItem(10, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
- //   local.horizontalLayout_local->addItem(local.horizontalSpacer_local);
-
-    local.horizontalLayout_local->addWidget(local.label3);
-    local.horizontalLayout_local->addWidget(local.label4);
-
-    local.verticalLayout_local->addLayout(local.horizontalLayout_local);
-
-    for(i = 0; i < USB_MAX_NUM; i++)
-    {
-        usb[i].clearFlag  = false;
-
-        tmpGroup = groupBox(i);
-        if(tmpGroup == nullptr)
-            return;
-
-        usb[i].slice_1 = new QPieSlice(QStringLiteral("free"), 1, this);
-        usb[i].slice_1->setBrush(Qt::darkGray);
-        usb[i].slice_2 = new QPieSlice(QStringLiteral("used"), 0, this);
-
-        // 将两个饼状分区加入series
-        usb[i].series = new QPieSeries(this);
-        usb[i].series->append(usb[i].slice_1);
-        usb[i].series->append(usb[i].slice_2);
-        usb[i].series->setPieSize(0.6);
-
-        usb[i].chart = new QChart();
-        usb[i].chart->addSeries(usb[i].series);
-
-        usb[i].chartview = new QChartView(this);
-        usb[i].chartview->show();
-        usb[i].chartview->setChart(usb[i].chart);
-        usb[i].chartview->setRenderHint(QPainter::Antialiasing);
-        usb[i].chartview->setAutoFillBackground(true);
-
-        usb[i].verticalLayout_1 = new QVBoxLayout(tmpGroup);
-        usb[i].verticalLayout_1->setSpacing(0);
-        usb[i].verticalLayout_1->setContentsMargins(0, 0, 0, 0);
-        usb[i].verticalLayout_1->addWidget(usb[i].chartview);
-
-        usb[i].label1 = new QLabel(tmpGroup);
-        usb[i].label1->setText(QApplication::translate("MainWindow", "总容量:", Q_NULLPTR));
-
-        usb[i].label2 = new QLabel(tmpGroup);
-        usb[i].label2->setAlignment(Qt::AlignLeft);
-
-        usb[i].label3 = new QLabel(tmpGroup);
-        usb[i].label3->setText(QApplication::translate("MainWindow", "已用空间:", Q_NULLPTR));
-
-        usb[i].label4 = new QLabel(tmpGroup);
-        usb[i].label4->setAlignment(Qt::AlignLeft);
-
-        usb[i].horizontalLayout_1 = new QHBoxLayout();
-        usb[i].horizontalLayout_1->setSpacing(2);
-        usb[i].horizontalLayout_1->setContentsMargins(0, 0, 0, 0);
-        usb[i].horizontalLayout_1->addWidget(usb[i].label1);
-        usb[i].horizontalLayout_1->addWidget(usb[i].label2);
-        usb[i].horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-        usb[i].horizontalLayout_1->addItem(usb[i].horizontalSpacer);
-
-        usb[i].horizontalLayout_1->addWidget(usb[i].label3);
-        usb[i].horizontalLayout_1->addWidget(usb[i].label4);
-
-        usb[i].horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-        usb[i].horizontalLayout_1->addItem(usb[i].horizontalSpacer_2);
-        usb[i].verticalLayout_1->addLayout(usb[i].horizontalLayout_1);
-
-        usb[i].label5 = new QLabel(tmpGroup);
-        usb[i].label5->setText(QApplication::translate("MainWindow", "速度:", Q_NULLPTR));
-        usb[i].label6 = new QLabel(tmpGroup);
-        usb[i].label6->setAlignment(Qt::AlignLeft);
-        usb[i].label6->setMinimumWidth(80);
-
-        usb[i].horizontalLayout_2 = new QHBoxLayout();
-        usb[i].horizontalLayout_2->setSpacing(2);
-        usb[i].horizontalLayout_2->setContentsMargins(0, 0, 0, 0);
-        usb[i].horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
-        usb[i].horizontalLayout_2->addWidget(usb[i].label5);
-        usb[i].horizontalLayout_2->addWidget(usb[i].label6);
-
-        usb[i].progressBar = new QProgressBar(tmpGroup);
-        usb[i].progressBar->setRange(0,100);
-        usb[i].horizontalLayout_2->addWidget(usb[i].progressBar);
-
-        usb[i].verticalLayout_1->addLayout(usb[i].horizontalLayout_2);
-    }
-}
-#endif
-void MainWindow::drawPieChartInit()
-{
-    int i;
-    QGroupBox *tmpGroup = nullptr;
-
-    local.slice_1 = new QPieSlice(QStringLiteral("used"), 0, this);
-    local.slice_2 = new QPieSlice(QStringLiteral("free"), 1, this);
+    local.slice_1 = new QPieSlice(QStringLiteral("已用空间"), 0, this);
+    local.slice_2 = new QPieSlice(QStringLiteral("剩余空间"), 1, this);
 
     //local.slice_2->setBorderColor(Qt::red);
-    local.slice_2->setColor(Qt::lightGray);
+    //local.slice_2->setColor(Qt::lightGray);
 
     local.series = new QPieSeries(ui->groupBox_17);
     local.series->setHoleSize(0.35);
@@ -601,7 +499,7 @@ void MainWindow::drawPieChartInit()
     local.label2->setAlignment(Qt::AlignLeft);
 
     local.label3 = new QLabel(ui->groupBox_17);
-    local.label3->setText(QApplication::translate("MainWindow", "已用空间:", Q_NULLPTR));
+    local.label3->setText(QApplication::translate("MainWindow", "可用空间:", Q_NULLPTR));
 
     local.label4 = new QLabel(ui->groupBox_17);
     local.label4->setAlignment(Qt::AlignLeft);
@@ -628,9 +526,8 @@ void MainWindow::drawPieChartInit()
         if(tmpGroup == nullptr)
             return;
 
-        usb[i].slice_1 = new QPieSlice(QStringLiteral("used"), 0, this);
-        usb[i].slice_2 = new QPieSlice(QStringLiteral("free"), 1, this);
-        usb[i].slice_2->setColor(Qt::lightGray);
+        usb[i].slice_1 = new QPieSlice(QStringLiteral("已用空间"), 0, this);
+        usb[i].slice_2 = new QPieSlice(QStringLiteral("剩余空间"), 1, this);
 
         usb[i].series = new QPieSeries(tmpGroup);
         usb[i].series->setHoleSize(0.35);
@@ -650,7 +547,12 @@ void MainWindow::drawPieChartInit()
         usb[i].verticalLayout_1 = new QVBoxLayout(tmpGroup);
         usb[i].verticalLayout_1->setSpacing(0);
         usb[i].verticalLayout_1->setContentsMargins(0, 0, 0, 0);
-        usb[i].verticalLayout_1->addWidget(usb[i].chartview);
+
+        usb[i].verticalLayout_2 = new QVBoxLayout();
+        usb[i].verticalLayout_2->setContentsMargins(0, 0, 0, 0);
+        usb[i].verticalLayout_2->addWidget(usb[i].chartview);
+
+        usb[i].verticalLayout_1->addLayout(usb[i].verticalLayout_2);
 
         usb[i].label1 = new QLabel(tmpGroup);
         usb[i].label1->setText(QApplication::translate("MainWindow", "总容量:", Q_NULLPTR));
@@ -659,7 +561,7 @@ void MainWindow::drawPieChartInit()
         usb[i].label2->setAlignment(Qt::AlignLeft);
 
         usb[i].label3 = new QLabel(tmpGroup);
-        usb[i].label3->setText(QApplication::translate("MainWindow", "已用空间:", Q_NULLPTR));
+        usb[i].label3->setText(QApplication::translate("MainWindow", "可用空间:", Q_NULLPTR));
 
         usb[i].label4 = new QLabel(tmpGroup);
         usb[i].label4->setAlignment(Qt::AlignLeft);

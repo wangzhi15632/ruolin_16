@@ -24,8 +24,6 @@ void SearchThread::run()
         read_unmount_point();
 
         //check_ftp_transmission();
-
-        sleep(1);
     }
 
     qDebug() << "search quit";

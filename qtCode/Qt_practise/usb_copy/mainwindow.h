@@ -14,13 +14,10 @@
 #include <QNetworkReply>
 #include "ftpconfig.h"
 #include "usbformat.h"
-#include "qftp.h"
-#include "qurlinfo.h"
 
 #define USB_MAX_NUM 16
 
 extern QSemaphore CopyThreadNum;  /*当FTP线程获取到16个CopyThreadNum信号量，才可以进行传输，表示当前没有复制线程*/
-extern QSemaphore ftp_Sem;
 extern bool ftpFlag;     /*ftpFlag 用来判断是否可以发送信号启动FTP线程*/
 extern QMutex mutex;  /*互斥信号mutex用来对全局变量ftpFlag变量进行互斥操作*/
 extern QMutex ftp_mutex; /*互斥信号ftp_mutex用来对FTP遍历线程和FTP传输线程进行互斥，只有传输完一个文件才能传输下一个文件*/
@@ -39,7 +36,7 @@ typedef struct
     QPieSeries *series;
     QChart *chart;
     QChartView *chartview;
-    QVBoxLayout *verticalLayout_1;
+    QVBoxLayout *verticalLayout_1, *verticalLayout_2;
     QLabel *label1, *label2, *label3, *label4, *label5, *label6;
     QHBoxLayout *horizontalLayout_1, *horizontalLayout_2, *horizontalLayout_10;
     QSpacerItem *horizontalSpacer, *horizontalSpacer_2, *horizontalSpacer_3;
@@ -74,7 +71,6 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-
 private:
     void init();
     void initTimer();
@@ -86,6 +82,11 @@ private:
     local_t local;
     usb_t usb[USB_MAX_NUM];
     SearchThread *searchThread;
+
+    QThread *ftpThread;/*ftp传输数据线程*/
+    FtpManager *ftpWork;
+    QThread *ftpTraverThread;/*ftp遍历目录线程*/
+    FtpTraversing *ftpTraver;
 
     QProgressBar *ftpProgressBar;
     QTimer *timer;/*timer定时器用来显示本地存储多界面，超时更新*/

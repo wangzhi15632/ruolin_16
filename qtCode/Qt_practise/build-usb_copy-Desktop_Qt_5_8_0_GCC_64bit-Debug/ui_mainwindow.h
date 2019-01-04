@@ -83,7 +83,7 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QStringLiteral("MainWindow"));
-        MainWindow->resize(1548, 906);
+        MainWindow->resize(1031, 748);
         action_2 = new QAction(MainWindow);
         action_2->setObjectName(QStringLiteral("action_2"));
         action_usb_format = new QAction(MainWindow);
@@ -278,7 +278,7 @@ public:
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 1548, 25));
+        menuBar->setGeometry(QRect(0, 0, 1031, 25));
         menu = new QMenu(menuBar);
         menu->setObjectName(QStringLiteral("menu"));
         MainWindow->setMenuBar(menuBar);
