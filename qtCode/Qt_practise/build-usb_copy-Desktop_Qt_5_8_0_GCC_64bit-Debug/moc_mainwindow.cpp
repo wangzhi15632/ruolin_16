@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_MainWindow_t {
-    QByteArrayData data[21];
-    char stringdata0[249];
+    QByteArrayData data[22];
+    char stringdata0[270];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -51,7 +51,8 @@ QT_MOC_LITERAL(16, 180, 11), // "starFtpTime"
 QT_MOC_LITERAL(17, 192, 17), // "updateFtpProgress"
 QT_MOC_LITERAL(18, 210, 16), // "ftpCfgBtnClicked"
 QT_MOC_LITERAL(19, 227, 16), // "usbFmtActClicked"
-QT_MOC_LITERAL(20, 244, 4) // "test"
+QT_MOC_LITERAL(20, 244, 20), // "searchFileActClicked"
+QT_MOC_LITERAL(21, 265, 4) // "test"
 
     },
     "MainWindow\0starFtpTransmission\0\0"
@@ -61,7 +62,7 @@ QT_MOC_LITERAL(20, 244, 4) // "test"
     "showLocalStorage\0emitToFtpTranslation\0"
     "starFtpTime\0updateFtpProgress\0"
     "ftpCfgBtnClicked\0usbFmtActClicked\0"
-    "test"
+    "searchFileActClicked\0test"
 };
 #undef QT_MOC_LITERAL
 
@@ -71,7 +72,7 @@ static const uint qt_meta_data_MainWindow[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-      13,   14, // methods
+      14,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -79,21 +80,22 @@ static const uint qt_meta_data_MainWindow[] = {
        1,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    0,   79,    2, 0x06 /* Public */,
+       1,    0,   84,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       3,    4,   80,    2, 0x08 /* Private */,
-       4,    2,   89,    2, 0x08 /* Private */,
-       5,    5,   94,    2, 0x08 /* Private */,
-       9,    1,  105,    2, 0x08 /* Private */,
-      11,    1,  108,    2, 0x08 /* Private */,
-      14,    0,  111,    2, 0x08 /* Private */,
-      15,    0,  112,    2, 0x08 /* Private */,
-      16,    0,  113,    2, 0x08 /* Private */,
-      17,    4,  114,    2, 0x08 /* Private */,
-      18,    0,  123,    2, 0x08 /* Private */,
-      19,    0,  124,    2, 0x08 /* Private */,
-      20,    0,  125,    2, 0x08 /* Private */,
+       3,    4,   85,    2, 0x08 /* Private */,
+       4,    2,   94,    2, 0x08 /* Private */,
+       5,    5,   99,    2, 0x08 /* Private */,
+       9,    1,  110,    2, 0x08 /* Private */,
+      11,    1,  113,    2, 0x08 /* Private */,
+      14,    0,  116,    2, 0x08 /* Private */,
+      15,    0,  117,    2, 0x08 /* Private */,
+      16,    0,  118,    2, 0x08 /* Private */,
+      17,    4,  119,    2, 0x08 /* Private */,
+      18,    0,  128,    2, 0x08 /* Private */,
+      19,    0,  129,    2, 0x08 /* Private */,
+      20,    0,  130,    2, 0x08 /* Private */,
+      21,    0,  131,    2, 0x08 /* Private */,
 
  // signals: parameters
     QMetaType::Void,
@@ -108,6 +110,7 @@ static const uint qt_meta_data_MainWindow[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void, QMetaType::QString, 0x80000000 | 6, 0x80000000 | 7, 0x80000000 | 8,    2,    2,    2,    2,
+    QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
@@ -133,7 +136,8 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 9: _t->updateFtpProgress((*reinterpret_cast< QString(*)>(_a[1])),(*reinterpret_cast< sum_t(*)>(_a[2])),(*reinterpret_cast< copied_t(*)>(_a[3])),(*reinterpret_cast< time_t(*)>(_a[4]))); break;
         case 10: _t->ftpCfgBtnClicked(); break;
         case 11: _t->usbFmtActClicked(); break;
-        case 12: _t->test(); break;
+        case 12: _t->searchFileActClicked(); break;
+        case 13: _t->test(); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -174,13 +178,13 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 13)
+        if (_id < 14)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 13;
+        _id -= 14;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 13)
+        if (_id < 14)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 13;
+        _id -= 14;
     }
     return _id;
 }

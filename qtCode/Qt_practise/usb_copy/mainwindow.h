@@ -14,6 +14,7 @@
 #include <QNetworkReply>
 #include "ftpconfig.h"
 #include "usbformat.h"
+#include "searchfile.h"
 
 #define USB_MAX_NUM 16
 
@@ -81,20 +82,20 @@ private:
 private:
     local_t local;
     usb_t usb[USB_MAX_NUM];
+
+    SearchFile *searchFile;
+    usbFormat *usbfmt;
+    FtpConfig *ftpCfg;
+
+    QTimer *timer;/*timer定时器用来显示本地存储多界面，超时更新*/
+    QTimer *timer_ftp;/*timer_ftp定时器用来倒计时，时间到了之后群启动FTP遍历线程*/
+
     SearchThread *searchThread;
 
     QThread *ftpThread;/*ftp传输数据线程*/
     FtpManager *ftpWork;
     QThread *ftpTraverThread;/*ftp遍历目录线程*/
     FtpTraversing *ftpTraver;
-
-    QProgressBar *ftpProgressBar;
-    QTimer *timer;/*timer定时器用来显示本地存储多界面，超时更新*/
-    QTimer *timer_ftp;/*timer_ftp定时器用来倒计时，时间到了之后群启动FTP遍历线程*/
-
-    FtpConfig *ftpCfg;
-
-    usbFormat *usbfmt;
 
 private:
     Ui::MainWindow *ui;
@@ -114,6 +115,7 @@ private slots:
     void updateFtpProgress(QString, sum_t, copied_t, time_t); /*更新FTP进度条以及文本框信息*/
     void ftpCfgBtnClicked();
     void usbFmtActClicked();
+    void searchFileActClicked();
     void test();
 
 };

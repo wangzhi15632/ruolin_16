@@ -9,6 +9,7 @@
 #include <QSemaphore>
 #include <QThread>
 #include "ftp_traversing.h"
+#include "updatedbsdialog.h"
 
 QSemaphore CopyThreadNum(USB_MAX_NUM);
 bool ftpFlag = true;
@@ -35,16 +36,54 @@ MainWindow::~MainWindow()
 {
     delete ui;
 
-    delete searchThread;
+    if(searchFile != NULL)
+    {
+        delete searchFile;
+    }
 
-    ftpThread->quit();
-    ftpThread->wait();
-    ftpTraverThread->quit();
-    ftpTraverThread->wait();
+    if(usbfmt != NULL)
+    {
+        delete usbfmt;
+    }
 
-    qDebug() << "delete ftp";
-    delete ftpWork;
-    delete ftpTraver;
+    if(timer != NULL)
+    {
+        delete timer;
+    }
+
+    if(timer_ftp != NULL)
+    {
+        delete timer_ftp;
+    }
+
+    if(searchThread != NULL)
+    {
+        delete searchThread;
+    }
+
+    if(ftpThread != NULL)
+    {
+        ftpThread->quit();
+        ftpThread->wait();
+        delete ftpThread;
+    }
+
+    if(ftpTraverThread != NULL)
+    {
+        ftpTraverThread->quit();
+        ftpTraverThread->wait();
+        delete ftpTraverThread;
+    }
+
+    if(ftpWork != NULL)
+    {
+        delete ftpWork;
+    }
+
+    if(ftpTraver != NULL)
+    {
+        delete ftpTraver;
+    }
 }
 
 void MainWindow::slotFindDev(char *mountPoint)
@@ -328,6 +367,16 @@ void MainWindow::usbFmtActClicked()
     }
 }
 
+void MainWindow::searchFileActClicked()
+{
+    searchFile->show();
+    UpdateDbsDialog updateDbsDialog(searchFile);
+    QObject::connect(&updateDbsDialog, SIGNAL(databaseUpdated()), searchFile, SLOT(reloadModel()));
+    updateDbsDialog.exec();
+    qDebug() << "cancel";
+
+}
+
 void MainWindow::test()
 {
     qDebug() <<"test";
@@ -335,12 +384,19 @@ void MainWindow::test()
 
 void MainWindow::init()
 {
-    QFile *file = new QFile("/media/mount_info.txt");
-    file->remove();
-    QFile *file2 = new QFile("/media/unmount_info.txt");
-    file2->remove();
+    /*判断挂在*/
+    QFile file("/media/mount_info.txt");
+    if(file.exists())
+    {
+        file.remove();
+    }
 
-    qDebug() << "main thread: " << QThread::currentThread();
+    QFile file2("/media/unmount_info.txt");
+    if(file2.exists())
+    {
+        file2.remove();
+    }
+
     /*config mainWindow size and title*/
     setWindowTitle(tr("16路转储平台 V1.0"));
     setMinimumSize(QSize(1400, 1000));
@@ -356,8 +412,10 @@ void MainWindow::init()
     ui->centralWidget->setPalette(pal);
 
     usbfmt = new usbFormat(this);
-
     connect(ui->action_usb_format, SIGNAL(triggered(bool)), this, SLOT(usbFmtActClicked()));
+
+    searchFile = new SearchFile(this);
+    connect(ui->action_search_file, SIGNAL(triggered(bool)), this, SLOT(searchFileActClicked()));
 
     /*init pie char for usb*/
     drawPieChartInit();
@@ -599,86 +657,4 @@ void MainWindow::drawPieChartInit()
 
         usb[i].verticalLayout_1->addLayout(usb[i].horizontalLayout_2);
     }
-
-#if 0
-
-    for(i = 0; i < USB_MAX_NUM; i++)
-    {
-        usb[i].clearFlag  = false;
-
-        tmpGroup = groupBox(i);
-        if(tmpGroup == nullptr)
-            return;
-
-        usb[i].slice_1 = new QPieSlice(QStringLiteral("free"), 1, this);
-        usb[i].slice_1->setBrush(Qt::darkGray);
-        usb[i].slice_2 = new QPieSlice(QStringLiteral("used"), 0, this);
-
-        // 将两个饼状分区加入series
-        usb[i].series = new QPieSeries(this);
-        usb[i].series->append(usb[i].slice_1);
-        usb[i].series->append(usb[i].slice_2);
-        usb[i].series->setPieSize(0.6);
-
-        usb[i].chart = new QChart();
-        usb[i].chart->addSeries(usb[i].series);
-
-        usb[i].chartview = new QChartView(this);
-        usb[i].chartview->show();
-        usb[i].chartview->setChart(usb[i].chart);
-        usb[i].chartview->setRenderHint(QPainter::Antialiasing);
-        usb[i].chartview->setAutoFillBackground(true);
-
-        usb[i].verticalLayout_1 = new QVBoxLayout(tmpGroup);
-        usb[i].verticalLayout_1->setSpacing(0);
-        usb[i].verticalLayout_1->setContentsMargins(0, 0, 0, 0);
-        usb[i].verticalLayout_1->addWidget(usb[i].chartview);
-
-        usb[i].label1 = new QLabel(tmpGroup);
-        usb[i].label1->setText(QApplication::translate("MainWindow", "总容量:", Q_NULLPTR));
-
-        usb[i].label2 = new QLabel(tmpGroup);
-        usb[i].label2->setAlignment(Qt::AlignLeft);
-
-        usb[i].label3 = new QLabel(tmpGroup);
-        usb[i].label3->setText(QApplication::translate("MainWindow", "已用空间:", Q_NULLPTR));
-
-        usb[i].label4 = new QLabel(tmpGroup);
-        usb[i].label4->setAlignment(Qt::AlignLeft);
-
-        usb[i].horizontalLayout_1 = new QHBoxLayout();
-        usb[i].horizontalLayout_1->setSpacing(2);
-        usb[i].horizontalLayout_1->setContentsMargins(0, 0, 0, 0);
-        usb[i].horizontalLayout_1->addWidget(usb[i].label1);
-        usb[i].horizontalLayout_1->addWidget(usb[i].label2);
-        usb[i].horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-        usb[i].horizontalLayout_1->addItem(usb[i].horizontalSpacer);
-
-        usb[i].horizontalLayout_1->addWidget(usb[i].label3);
-        usb[i].horizontalLayout_1->addWidget(usb[i].label4);
-
-        usb[i].horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-        usb[i].horizontalLayout_1->addItem(usb[i].horizontalSpacer_2);
-        usb[i].verticalLayout_1->addLayout(usb[i].horizontalLayout_1);
-
-        usb[i].label5 = new QLabel(tmpGroup);
-        usb[i].label5->setText(QApplication::translate("MainWindow", "速度:", Q_NULLPTR));
-        usb[i].label6 = new QLabel(tmpGroup);
-        usb[i].label6->setAlignment(Qt::AlignLeft);
-        usb[i].label6->setMinimumWidth(80);
-
-        usb[i].horizontalLayout_2 = new QHBoxLayout();
-        usb[i].horizontalLayout_2->setSpacing(2);
-        usb[i].horizontalLayout_2->setContentsMargins(0, 0, 0, 0);
-        usb[i].horizontalLayout_2->setObjectName(QStringLiteral("horizontalLayout_2"));
-        usb[i].horizontalLayout_2->addWidget(usb[i].label5);
-        usb[i].horizontalLayout_2->addWidget(usb[i].label6);
-
-        usb[i].progressBar = new QProgressBar(tmpGroup);
-        usb[i].progressBar->setRange(0,100);
-        usb[i].horizontalLayout_2->addWidget(usb[i].progressBar);
-
-        usb[i].verticalLayout_1->addLayout(usb[i].horizontalLayout_2);
-    }
-#endif
 }

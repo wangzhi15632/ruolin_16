@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui charts network
+QT       += core gui charts network sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -35,7 +35,13 @@ SOURCES += \
     ftpthread.cpp \
     ftp_traversing.cpp \
     ftpconfig.cpp \
-    usbformat.cpp
+    usbformat.cpp \
+    searchfile.cpp \
+    updatedbsdialog.cpp \
+    taskmanager.cpp \
+    sudodialog.cpp \
+    ctableview.cpp \
+    csqlquerymodel.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -48,12 +54,21 @@ HEADERS += \
     ftp_traversing.h \
     ftpconfig.h \
     lib/libstorage.h \
-    usbformat.h
+    usbformat.h \
+    searchfile.h \
+    updatedbsdialog.h \
+    taskmanager.h \
+    sudodialog.h \
+    ctableview.h \
+    csqlquerymodel.h
 
 FORMS += \
         mainwindow.ui \
     ftpconfig.ui \
-    usbformat.ui
+    usbformat.ui \
+    searchfile.ui \
+    sudodialog.ui \
+    updatedbsdialog.ui
 
 LIBS += -lpthread
 

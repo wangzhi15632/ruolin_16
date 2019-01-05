@@ -36,6 +36,8 @@ class Ui_MainWindow
 public:
     QAction *action_2;
     QAction *action_usb_format;
+    QAction *action;
+    QAction *action_search_file;
     QWidget *centralWidget;
     QHBoxLayout *horizontalLayout_5;
     QWidget *widget;
@@ -88,6 +90,10 @@ public:
         action_2->setObjectName(QStringLiteral("action_2"));
         action_usb_format = new QAction(MainWindow);
         action_usb_format->setObjectName(QStringLiteral("action_usb_format"));
+        action = new QAction(MainWindow);
+        action->setObjectName(QStringLiteral("action"));
+        action_search_file = new QAction(MainWindow);
+        action_search_file->setObjectName(QStringLiteral("action_search_file"));
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         horizontalLayout_5 = new QHBoxLayout(centralWidget);
@@ -294,6 +300,7 @@ public:
 
         menuBar->addAction(menu->menuAction());
         menu->addAction(action_usb_format);
+        menu->addAction(action_search_file);
 
         retranslateUi(MainWindow);
 
@@ -305,6 +312,8 @@ public:
         MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", Q_NULLPTR));
         action_2->setText(QApplication::translate("MainWindow", "\346\240\274\345\274\217\345\214\226\350\256\276\347\275\256", Q_NULLPTR));
         action_usb_format->setText(QApplication::translate("MainWindow", "U\347\233\230\346\240\274\345\274\217\345\214\226\350\256\276\347\275\256", Q_NULLPTR));
+        action->setText(QApplication::translate("MainWindow", "\346\220\234\347\264\242\346\226\207\344\273\266", Q_NULLPTR));
+        action_search_file->setText(QApplication::translate("MainWindow", "\346\220\234\347\264\242\346\226\207\344\273\266", Q_NULLPTR));
         groupBox->setTitle(QApplication::translate("MainWindow", "USB-1", Q_NULLPTR));
         groupBox_2->setTitle(QApplication::translate("MainWindow", "USB-2", Q_NULLPTR));
         groupBox_3->setTitle(QApplication::translate("MainWindow", "USB-3", Q_NULLPTR));
